@@ -2,36 +2,46 @@
 
 @theme {
   --font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
-  --color-brand-50: #eefaf8;
-  --color-brand-100: #d4f1ed;
-  --color-brand-200: #a9e3da;
-  --color-brand-500: #00a0a3;
-  --color-brand-600: #008e91;
-  --color-brand-700: #007477;
-  --color-brand-800: #075b5f;
-  --color-lime-soft: #c9e86b;
+  --color-brand-50: #edfafa;
+  --color-brand-100: #d5f2f3;
+  --color-brand-200: #a5e4e8;
+  --color-brand-300: #69d4dc;
+  --color-brand-400: #2ebecb;
+  --color-brand-500: #00a8b5;
+  --color-brand-600: #007d87;
+  --color-brand-700: #00656f;
+  --color-brand-800: #064e56;
+  --color-brand-900: #103139;
+  --color-ink: #101c21;
+  --color-lime-soft: #c6ee42;
 }
 
 @layer base {
-  body { @apply bg-[#f5f8f9] font-sans text-slate-800 antialiased; }
+  body { @apply bg-[#f3f7f7] font-sans text-ink antialiased; font-feature-settings: 'cv11', 'ss01'; }
+  ::selection { background: #c6ee42; color: #101c21; }
   button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
   button:not(:disabled) { cursor: pointer; }
   :focus-visible { @apply outline-2 outline-offset-4 outline-brand-600; }
   input, select, textarea { @apply min-w-0; }
-  input[type="checkbox"] { accent-color: #008e91; }
+  input[type="checkbox"] { accent-color: #007d87; }
 }
 
 @layer components {
-  .panel { @apply rounded-2xl border border-slate-200/80 bg-white shadow-[0_3px_16px_-12px_rgba(15,23,42,0.3)]; }
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-45; }
+  .panel { @apply rounded-2xl border border-slate-200/70 bg-white shadow-[0_8px_32px_-24px_rgba(16,28,33,0.25)]; }
+  .btn { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-45; }
   .btn-primary { @apply bg-brand-600 text-white hover:bg-brand-700; }
   .btn-secondary { @apply border border-slate-200 bg-white text-slate-700 hover:border-brand-200 hover:bg-brand-50; }
   .btn-quiet { @apply text-slate-600 hover:bg-slate-100; }
+  .btn-lime { @apply bg-lime-soft text-ink hover:bg-[#b6df2d]; }
   .field { @apply w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition-colors focus:border-brand-500 focus:ring-3 focus:ring-brand-100 disabled:bg-slate-50 disabled:text-slate-500; }
   .label { @apply mb-1.5 block text-xs font-semibold text-slate-600; }
-  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400; }
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500; }
   .table-head { @apply bg-slate-50/80 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500; }
   .tag { @apply inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium; }
+  .doctor-card { @apply overflow-hidden rounded-[1.5rem] border border-slate-200/70 bg-white shadow-[0_10px_32px_-25px_rgba(16,28,33,0.4)] transition-[transform,box-shadow] duration-200 motion-safe:hover:-translate-y-1 hover:shadow-[0_18px_38px_-24px_rgba(16,28,33,0.35)]; }
+  .doctor-poster { background: radial-gradient(ellipse at 85% 10%, #00a8b577, transparent 55%), linear-gradient(145deg, #18353d, #101c21 80%); }
+  .doctor-poster-child { background: radial-gradient(ellipse at 85% 10%, #c6ee4266, transparent 55%), linear-gradient(145deg, #263b2a, #101c21 80%); }
+  .app-hero { background: radial-gradient(ellipse at 95% 0%, #00a8b54d, transparent 55%), #101c21; }
 }
 
 .scrollbar-thin { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
@@ -39,7 +49,7 @@
 .roster-table th, .roster-table td { border-right: 1px solid #e9eef1; border-bottom: 1px solid #e9eef1; }
 .roster-table .sticky-doctor { position: sticky; left: 0; z-index: 2; background: #fff; }
 .roster-table thead .sticky-doctor { z-index: 3; background: #f8fafc; }
-.roster-cell:hover { box-shadow: inset 0 0 0 2px #008e91; }
+.roster-cell:hover { box-shadow: inset 0 0 0 2px #007d87; }
 .page-enter-active, .page-leave-active { transition: opacity 0.12s; }
 .page-enter-from, .page-leave-to { opacity: 0; }
 
@@ -50,9 +60,11 @@
 .print-document .print-number { width: 24px; }
 .print-document .print-total { width: 40px; }
 @page { size: A4 landscape; margin: 8mm; }
+@page attendance-qr { size: A4 portrait; margin: 18mm; }
+.attendance-qr-print { page: attendance-qr; }
 @media print {
   body { background: white !important; }
-  .app-sidebar, .app-topbar, .screen-only, .toast-stack { display: none !important; }
+  .app-sidebar, .app-topbar, .mobile-nav, .screen-only, .toast-stack { display: none !important; }
   .app-main { margin: 0 !important; }
   .app-content { padding: 0 !important; max-width: none !important; }
   .print-wrap { padding: 0 !important; overflow: visible !important; border: 0 !important; box-shadow: none !important; }
@@ -64,4 +76,7 @@
   .print-document .signature-space { height: 38px !important; }
   .print-document .print-legend { font-size: 7px; }
   .print-document { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
