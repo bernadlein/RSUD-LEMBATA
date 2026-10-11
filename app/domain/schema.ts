@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { Workspace } from './types'
+import { isDoctorPhotoPath, assertDoctorPhotoScope } from './doctor-photo'
 
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)
 const date = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/).refine(value => {
@@ -10,6 +11,7 @@ const code = z.string().min(1).max(16).regex(/^[A-Z0-9 _-]+$/)
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
 const doctor = z.object({
   id: z.string().regex(/^[A-Za-z0-9_-]{1,80}$/), name: z.string().min(1).max(100), phone: z.string().max(30),
+  photoPath: z.string().max(180).refine(isDoctorPhotoPath).nullable().optional(),
   unit: z.enum(['rotasi', 'anak']), active: z.boolean(), joinedOn: date.nullable(),
   leave: z.array(z.object({ from: date, to: date })).max(120),
 })
@@ -52,6 +54,7 @@ export function parseWorkspace(input: unknown): Workspace {
     if (!zero && s.durationOverride === 0) throw new Error(`Dinas ${s.code} harus memiliki durasi positif.`)
   }
   data.shifts.forEach(validateShift)
+  for (const d of data.doctors) if (d.photoPath) assertDoctorPhotoScope(d.photoPath, d.id)
   for (const d of data.doctors) for (const l of d.leave) if (l.from > l.to) throw new Error(`Rentang cuti ${d.name} terbalik.`)
   for (const [key, p] of Object.entries(data.plans)) {
     if (key !== p.month) throw new Error('Kunci bulan tidak sesuai dengan isi jadwal.')
