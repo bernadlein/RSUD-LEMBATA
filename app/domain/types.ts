@@ -16,6 +16,7 @@ export interface Doctor {
   id: string
   name: string
   phone: string
+  photoPath?: string | null
   unit: 'rotasi' | 'anak'
   active: boolean
   joinedOn: string | null
