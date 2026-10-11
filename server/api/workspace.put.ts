@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { parseWorkspace } from '../../app/domain/schema'
 import { validateChange } from '../../app/domain/permissions'
 import type { Role } from '../../app/domain/types'
+import { assertWorkspacePhotoScope } from '../../app/domain/doctor-photo'
 
 const requestSchema = z.object({ id: z.string().uuid(), expectedRevision: z.number().int().nonnegative(), action: z.string().min(1).max(250), administration: z.boolean().default(false), data: z.unknown() })
 export default defineEventHandler(async (event) => {
@@ -16,7 +17,7 @@ export default defineEventHandler(async (event) => {
   const raw = await readRawBody(event, 'utf8')
   if (!raw || Buffer.byteLength(raw) > 2 * 1024 * 1024) throw createError({ statusCode: 413, statusMessage: 'Data maksimal 2 MB.' })
   let input: z.infer<typeof requestSchema>, next
-  try { input = requestSchema.parse(JSON.parse(raw)); next = parseWorkspace(input.data) }
+  try { input = requestSchema.parse(JSON.parse(raw)); next = parseWorkspace(input.data); assertWorkspacePhotoScope(next, input.id) }
   catch { throw createError({ statusCode: 400, statusMessage: 'Format perubahan tidak valid.' }) }
   const { data: membership, error: memberError } = await publicClient.from('rd_members').select('role').eq('workspace_id', input.id).eq('user_id', auth.user.id).maybeSingle()
   if (memberError || !membership) throw createError({ statusCode: 403, statusMessage: 'Akun tidak memiliki akses ke ruang kerja ini.' })
