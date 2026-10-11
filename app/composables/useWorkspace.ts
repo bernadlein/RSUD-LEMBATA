@@ -57,17 +57,22 @@ export function useWorkspace() {
   }
   async function mutate(transform: (w: Workspace) => Workspace, action: string, admin = false): Promise<boolean> {
     if (!data.value || !repository || saving.value) return false
+    const request = { repository, id: id.value, userId: session.value?.user.id, generation: loadGeneration }
+    const stillCurrent = () => request.id === id.value && request.userId === session.value?.user.id
     try {
       assertRole(role.value, admin)
       const next = parseWorkspace(transform(cloneWorkspace(data.value)))
       validateChange(data.value, next, role.value, admin)
       record(next, action, session.value?.user.email ?? 'Admin demo')
       saving.value = true
-      const nextRevision = await repository.save(id.value, next, revision.value, action, admin)
-      data.value = next; revision.value = nextRevision
+      const nextRevision = await request.repository.save(request.id, next, revision.value, action, admin)
+      if (!stillCurrent()) return false
+      if (request.generation !== loadGeneration) await reload()
+      else { data.value = next; revision.value = nextRevision }
+      if (!stillCurrent()) return false
       notify('Perubahan tersimpan.')
       return true
-    } catch (e) { notify((e as Error).message, true); return false }
+    } catch (e) { if (stillCurrent()) notify((e as Error).message, true); return false }
     finally { saving.value = false }
   }
   async function createWorkspace(name: string) {
