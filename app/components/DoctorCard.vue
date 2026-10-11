@@ -2,16 +2,21 @@
 import { Pencil, CalendarDays, Clock3 } from '@lucide/vue'
 import type { Doctor, DoctorSummary } from '../domain/types'
 import { formatHours, prettyDate } from '../domain/calendar'
-defineProps<{ doctor: Doctor; number: number; summary?: DoctorSummary; canEdit: boolean }>()
+const props = defineProps<{ doctor: Doctor; number: number; summary?: DoctorSummary; canEdit: boolean; photoUrl?: string | null }>()
 defineEmits<{ edit: [doctor: Doctor] }>()
 const initials = (name: string) => name.replace(/^dr\.?\s*/i, '').slice(0, 2).toUpperCase()
+const photoFailed = ref(false)
+const showPhoto = computed(() => !!props.photoUrl && !photoFailed.value)
+watch(() => props.photoUrl, () => { photoFailed.value = false })
 </script>
 <template>
   <article class="doctor-card flex h-full flex-col">
-    <div class="relative flex h-48 flex-col justify-between overflow-hidden p-5 text-white" :class="doctor.unit === 'anak' ? 'doctor-poster-child' : 'doctor-poster'">
+    <div class="relative flex aspect-[4/5] min-h-64 flex-col justify-between overflow-hidden p-5 text-white" :class="doctor.unit === 'anak' ? 'doctor-poster-child' : 'doctor-poster'">
+      <img v-if="showPhoto" :src="photoUrl || undefined" :alt="'Foto dokter ' + doctor.name" class="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" @error="photoFailed = true" />
+      <div v-if="showPhoto" aria-hidden="true" class="absolute inset-0 bg-linear-to-b from-ink/65 via-transparent to-ink/85"></div>
       <div class="relative z-1 flex items-center justify-between"><span class="text-xs font-medium tracking-widest text-white/60">DOKTER {{ String(number).padStart(2, '0') }}</span><span class="rounded-full px-2.5 py-1 text-[10px] font-semibold" :class="doctor.active ? 'bg-lime-soft text-ink' : 'bg-white/15 text-white'">{{ doctor.active ? 'Aktif' : 'Nonaktif' }}</span></div>
-      <span aria-hidden="true" class="absolute -right-5 -bottom-9 text-[155px] leading-none font-bold tracking-tighter text-white/4">{{ String(number).padStart(2, '0') }}</span>
-      <div class="relative z-1 flex items-end justify-between"><div class="flex h-20 w-20 items-center justify-center rounded-[1.35rem] border border-white/15 bg-white/8 text-3xl font-medium tracking-tight">{{ initials(doctor.name) }}</div><span class="mb-1 max-w-28 text-right text-xs leading-relaxed text-white/65">{{ doctor.unit === 'anak' ? 'Pelayanan ruang anak' : 'IGD dan ruangan' }}</span></div>
+      <span v-if="!showPhoto" aria-hidden="true" class="absolute -right-5 -bottom-9 text-[155px] leading-none font-bold tracking-tighter text-white/4">{{ String(number).padStart(2, '0') }}</span>
+      <div class="relative z-1 flex items-end" :class="showPhoto ? 'justify-end' : 'justify-between'"><div v-if="!showPhoto" class="flex h-20 w-20 items-center justify-center rounded-[1.35rem] border border-white/15 bg-white/8 text-3xl font-medium tracking-tight">{{ initials(doctor.name) }}</div><span class="mb-1 max-w-28 text-right text-xs leading-relaxed text-white/80">{{ doctor.unit === 'anak' ? 'Pelayanan ruang anak' : 'IGD dan ruangan' }}</span></div>
     </div>
     <div class="flex flex-1 flex-col p-5">
       <h2 class="text-xl font-semibold tracking-tight">{{ doctor.name.replace(/^dr\.?\s*/i, '') }}<span class="ml-2 text-xs font-normal text-slate-400">dokter</span></h2>
