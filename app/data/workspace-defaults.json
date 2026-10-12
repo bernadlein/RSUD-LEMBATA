@@ -1,0 +1,199 @@
+{
+  "settings": {
+    "hospital": "Rumah Sakit Anda",
+    "city": "Kota Anda",
+    "timezone": "Asia/Makassar",
+    "director": "",
+    "directorNip": "",
+    "sectionHead": "",
+    "sectionHeadNip": "",
+    "signedDate": "",
+    "minGapHours": 11,
+    "maxConsecutiveLong": 2,
+    "offAfterLong": 2,
+    "maxConsecutiveWork": 5,
+    "minimumCoverage": 1
+  },
+  "shifts": [
+    {
+      "code": "PSI",
+      "label": "Pagi–Siang IGD",
+      "unit": "igd",
+      "kind": "long",
+      "start": "07:00",
+      "end": "19:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "PI",
+      "label": "Pagi IGD",
+      "unit": "igd",
+      "kind": "regular",
+      "start": "07:00",
+      "end": "14:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "SI",
+      "label": "Siang IGD",
+      "unit": "igd",
+      "kind": "regular",
+      "start": "14:00",
+      "end": "21:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "MI",
+      "label": "Malam IGD",
+      "unit": "igd",
+      "kind": "long",
+      "start": "19:00",
+      "end": "07:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "L",
+      "label": "Lepas / Libur",
+      "unit": "none",
+      "kind": "off",
+      "start": null,
+      "end": null,
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "C",
+      "label": "Cuti",
+      "unit": "none",
+      "kind": "leave",
+      "start": null,
+      "end": null,
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "PR",
+      "label": "Poli Anak, Ruang Anak, NICU, PICU, Nifas",
+      "unit": "anak",
+      "kind": "regular",
+      "start": "07:00",
+      "end": "14:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "PSR",
+      "label": "Pagi–Siang tanggung jawab ruangan + IGD",
+      "unit": "ruangan",
+      "kind": "long",
+      "start": "07:00",
+      "end": "19:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "PRR",
+      "label": "Pagi Ruangan + IGD",
+      "unit": "ruangan",
+      "kind": "regular",
+      "start": "07:00",
+      "end": "14:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "SR",
+      "label": "Siang Ruangan + IGD",
+      "unit": "ruangan",
+      "kind": "regular",
+      "start": "14:00",
+      "end": "21:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "MR",
+      "label": "Malam Ruangan + IGD",
+      "unit": "ruangan",
+      "kind": "long",
+      "start": "19:00",
+      "end": "07:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "DL",
+      "label": "Dinas Luar",
+      "unit": "lain",
+      "kind": "regular",
+      "start": "07:00",
+      "end": "15:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "OR",
+      "label": "Orientasi",
+      "unit": "lain",
+      "kind": "regular",
+      "start": "07:00",
+      "end": "15:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "D8",
+      "label": "Dinas normal 8 jam",
+      "unit": "lain",
+      "kind": "regular",
+      "start": "07:00",
+      "end": "15:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "NI",
+      "label": "Malam reguler IGD",
+      "unit": "igd",
+      "kind": "regular",
+      "start": "21:00",
+      "end": "07:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "NR",
+      "label": "Malam reguler Ruangan + IGD",
+      "unit": "ruangan",
+      "kind": "regular",
+      "start": "21:00",
+      "end": "07:00",
+      "durationOverride": null,
+      "active": true
+    },
+    {
+      "code": "24 JAM",
+      "label": "Dinas 24 jam dari riwayat",
+      "unit": "lain",
+      "kind": "custom",
+      "start": null,
+      "end": null,
+      "durationOverride": 24,
+      "active": false
+    },
+    {
+      "code": "BM",
+      "label": "Belum mulai bergabung",
+      "unit": "none",
+      "kind": "not_started",
+      "start": null,
+      "end": null,
+      "durationOverride": null,
+      "active": true
+    }
+  ]
+}
