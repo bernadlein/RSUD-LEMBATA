@@ -1,56 +1,166 @@
 <script setup lang="ts">
-import { CalendarDays, Newspaper, UsersRound, Phone, MapPin } from '@lucide/vue'
-import { prettyDate, monthLabel } from '../domain/calendar'
 import { HOSPITAL_NAME } from '../domain/branding'
+import PublicSectionHeading from '../components/public/SectionHeading.vue'
+import PublicDoctorCard from '../components/public/DoctorCard.vue'
+import PublicNewsCard from '../components/public/NewsCard.vue'
+import PublicContactPanel from '../components/public/ContactPanel.vue'
+
 definePageMeta({ layout: 'public' })
-const site = usePublicHospital()
-const news = computed(() => [...(site.hospital.value?.news ?? [])].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3))
-useSeoMeta({
-  title: HOSPITAL_NAME,
-  description: () => site.hospital.value?.about.slice(0, 155) || 'Jadwal dokter dan berita RSUD LEWOLEBA.',
-  robots: 'index, follow',
-})
+const { hospital, pending, error, refresh, identity, contacts, doctors, news, latestNews, highlight, highlightRows, highlightPreview, highlightUrl, month, timezone, updatedAt } = usePublicPortal()
+useSeoMeta({ title: HOSPITAL_NAME, description: () => hospital.value?.about.slice(0, 155) || 'Jadwal dokter, layanan, dan informasi RSUD LEWOLEBA.', robots: 'index, follow' })
 </script>
 <template>
-  <div class="mx-auto max-w-7xl px-5 pt-7 lg:px-8 lg:pt-10">
-    <section class="app-hero grid items-center gap-8 rounded-[2rem] p-7 sm:p-10 lg:grid-cols-[1.2fr_0.8fr] lg:p-12">
+  <section class="public-home-hero">
+    <div class="public-container grid items-center gap-10 py-12 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:py-20">
       <div>
-        <h1 class="max-w-xl text-3xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl">{{ HOSPITAL_NAME }}</h1>
-        <p v-if="site.hospital.value?.about" class="mt-5 max-w-xl whitespace-pre-line text-base leading-relaxed text-slate-700">{{ site.hospital.value.about }}</p>
+        <p class="public-eyebrow">Rumah Sakit Umum Daerah · {{ identity.city }}</p>
+        <h1 class="public-home-title mt-5 max-w-xl">{{ identity.name }}</h1>
+        <p class="mt-6 max-w-md text-base leading-8 text-slate-600 sm:text-lg">
+          Jadwal dokter dan informasi pelayanan untuk Anda.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <NuxtLink to="/jadwal-dokter" class="public-button public-button-primary">Lihat jadwal dokter</NuxtLink>
+          <NuxtLink v-if="contacts.length" to="/#kontak" class="public-button public-button-outline">
+            Hubungi rumah sakit
+          </NuxtLink>
+          <NuxtLink v-else-if="news.length" to="/berita" class="public-button public-button-outline">Berita RS</NuxtLink>
+        </div>
+        <div
+          v-if="doctors.length || hospital?.services.length"
+          class="mt-9 flex flex-wrap gap-x-8 gap-y-5 border-t border-brand-200/60 pt-6"
+        >
+          <div v-if="doctors.length">
+            <p class="text-2xl font-semibold tracking-tight text-brand-700">{{ doctors.length }}</p>
+            <p class="mt-1 text-xs text-slate-600">Dokter</p>
+          </div>
+          <div v-if="hospital?.services.length">
+            <p class="text-2xl font-semibold tracking-tight text-brand-700">{{ hospital.services.length }}</p>
+            <p class="mt-1 text-xs text-slate-600">Layanan</p>
+          </div>
+        </div>
       </div>
-      <div class="grid gap-4">
-        <NuxtLink to="/jadwal-dokter" class="flex items-center gap-4 rounded-2xl border border-brand-100 bg-white p-5 hover:border-brand-300">
-          <span class="rounded-xl bg-brand-50 p-3 text-brand-700"><CalendarDays :size="24" /></span>
-          <div><h2 class="text-lg font-semibold">Jadwal dokter</h2><p v-if="site.hospital.value?.schedule.month" class="mt-1 text-sm text-slate-600">{{ monthLabel(site.hospital.value.schedule.month) }}</p></div>
-        </NuxtLink>
-        <NuxtLink to="/berita" class="flex items-center gap-4 rounded-2xl border border-brand-100 bg-white p-5 hover:border-brand-300">
-          <span class="rounded-xl bg-[#f3f9df] p-3 text-brand-800"><Newspaper :size="24" /></span><h2 class="text-lg font-semibold">Berita RS</h2>
-        </NuxtLink>
-      </div>
-    </section>
-    <section v-if="site.error.value" class="panel mt-7 p-5" role="status"><p class="text-sm text-slate-700">Informasi belum dapat dimuat.</p><button class="btn btn-secondary mt-3" @click="site.refresh()">Muat ulang</button></section>
-    <section v-if="site.hospital.value?.services.length" class="mt-10">
-      <h2 class="text-2xl font-semibold tracking-tight">Layanan</h2>
-      <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><article v-for="service in site.hospital.value.services" :key="service" class="panel flex items-center gap-3 p-5"><span class="h-2.5 w-2.5 shrink-0 rounded-full bg-brand-500"></span><h3 class="text-sm font-medium">{{ service }}</h3></article></div>
-    </section>
-    <section v-if="site.hospital.value?.doctors.length" class="mt-10">
-      <div class="flex items-center gap-3"><UsersRound :size="22" class="text-brand-700" /><h2 class="text-2xl font-semibold tracking-tight">Dokter</h2></div>
-      <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <article v-for="doctor in site.hospital.value.doctors" :key="doctor.id" class="panel flex items-center gap-4 p-5">
-          <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-lg font-semibold text-brand-700">{{ doctor.name.replace(/^dr\.?\s*/i, '').slice(0, 2).toUpperCase() }}</div>
-          <div><h3 class="font-semibold">{{ doctor.name }}</h3><p class="mt-1 text-sm text-slate-600">{{ doctor.unit === 'anak' ? 'Ruang anak' : 'IGD dan ruangan' }}</p></div>
+      <section class="public-highlight" aria-labelledby="home-schedule-heading">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <p class="public-eyebrow">Jadwal pelayanan</p>
+          <span v-if="highlight?.today" class="public-pill public-pill-lime">Hari ini</span>
+          <span v-else-if="month" class="public-pill public-pill-teal">{{ month }}</span>
+        </div>
+        <h2 id="home-schedule-heading" class="mt-4 text-xl font-semibold leading-snug tracking-tight">
+          {{ highlight?.label || 'Jadwal dokter' }}
+        </h2>
+        <p v-if="pending && !hospital" class="py-7 text-sm text-slate-600" role="status">Memuat jadwal…</p>
+        <div v-else-if="error" class="py-6" role="status">
+          <p class="text-sm leading-7 text-slate-600">Informasi belum dapat dimuat.</p>
+          <button type="button" class="public-button public-button-outline mt-4" @click="refresh()">Muat ulang</button>
+        </div>
+        <template v-else-if="month">
+          <div class="mt-5">
+            <div v-for="row in highlightPreview" :key="row.id" class="public-highlight-row">
+              <div class="flex min-w-0 items-center gap-3">
+                <span class="public-avatar" :class="{ 'is-lime': row.tone === 'lime' }" aria-hidden="true">
+                  {{ row.initials }}
+                </span>
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold">{{ row.doctorName }}</p>
+                  <p class="mt-1 text-[11px] text-slate-600">{{ row.unitLabel }}</p>
+                </div>
+              </div>
+              <p class="shrink-0 text-right text-xs font-semibold tabular-nums text-brand-700">
+                {{ row.timeLabel }}
+                <span class="mt-1 block text-[11px] font-medium text-slate-600">{{ timezone }}</span>
+              </p>
+            </div>
+          </div>
+          <p v-if="!highlightRows.length" class="py-6 text-sm leading-7 text-slate-600">
+            Tidak ada jadwal dinas pada tanggal ini.
+          </p>
+        </template>
+        <p v-else class="py-7 text-sm text-slate-600">Jadwal belum tersedia.</p>
+        <NuxtLink :to="highlightUrl" class="public-button public-button-lime mt-4 w-full">Jadwal lengkap</NuxtLink>
+        <p v-if="updatedAt" class="mt-4 text-center text-[11px] text-slate-600">Diperbarui {{ updatedAt }}</p>
+      </section>
+    </div>
+  </section>
+  <div class="public-container">
+    <nav class="public-quick-links" aria-label="Akses cepat">
+      <NuxtLink to="/jadwal-dokter" class="public-quick-link">
+        <div>
+          <p class="text-sm font-semibold">Jadwal dokter</p>
+          <p v-if="month" class="mt-1 text-xs text-slate-600">{{ month }}</p>
+        </div>
+        <span class="public-quick-number" aria-hidden="true">01</span>
+      </NuxtLink>
+      <NuxtLink v-if="hospital?.services.length" to="/#layanan" class="public-quick-link">
+        <div>
+          <p class="text-sm font-semibold">Layanan rumah sakit</p>
+          <p class="mt-1 text-xs text-slate-600">{{ hospital.services.length }} layanan</p>
+        </div>
+        <span class="public-quick-number" aria-hidden="true">02</span>
+      </NuxtLink>
+      <NuxtLink v-else-if="doctors.length" to="/#dokter" class="public-quick-link">
+        <div>
+          <p class="text-sm font-semibold">Dokter kami</p>
+          <p class="mt-1 text-xs text-slate-600">{{ doctors.length }} dokter</p>
+        </div>
+        <span class="public-quick-number" aria-hidden="true">02</span>
+      </NuxtLink>
+      <NuxtLink to="/berita" class="public-quick-link">
+        <div>
+          <p class="text-sm font-semibold">Berita & pengumuman</p>
+          <p v-if="news.length" class="mt-1 text-xs text-slate-600">{{ news[0]?.dateLabel }}</p>
+        </div>
+        <span class="public-quick-number" aria-hidden="true">03</span>
+      </NuxtLink>
+    </nav>
+    <section v-if="hospital?.services.length" id="layanan" class="public-section">
+      <PublicSectionHeading eyebrow="Pelayanan" title="Layanan rumah sakit" />
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <article v-for="(service, index) in hospital.services" :key="service" class="public-card public-service-card">
+          <h3 class="max-w-xs text-lg font-semibold leading-snug tracking-tight">{{ service }}</h3>
+          <span class="public-service-number" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
         </article>
       </div>
     </section>
-    <section v-if="news.length" class="mt-10">
-      <div class="flex flex-wrap items-end justify-between gap-3"><h2 class="text-2xl font-semibold tracking-tight">Berita terbaru</h2><NuxtLink to="/berita" class="text-sm font-semibold text-brand-700">Semua berita</NuxtLink></div>
-      <div class="mt-5 grid gap-5 md:grid-cols-3"><article v-for="item in news" :key="item.id" class="panel flex flex-col p-6"><p class="text-sm text-brand-700">{{ prettyDate(item.date) }}</p><h3 class="mt-4 text-lg font-semibold leading-snug">{{ item.title }}</h3><p class="mt-3 text-sm leading-relaxed text-slate-700">{{ item.summary || item.content.slice(0, 180) }}</p><NuxtLink :to="'/berita/' + item.id" class="mt-5 text-sm font-semibold text-brand-700">Baca berita</NuxtLink></article></div>
+    <section
+      v-if="doctors.length"
+      id="dokter"
+      class="public-section"
+      :class="{ 'border-t border-slate-100': hospital?.services.length }"
+    >
+      <PublicSectionHeading
+        eyebrow="Tim medis"
+        title="Dokter kami"
+        :link="month ? '/jadwal-dokter' : undefined"
+        :link-label="month ? 'Jadwal seluruh dokter' : undefined"
+      />
+      <div class="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <PublicDoctorCard
+          v-for="doctor in doctors"
+          :key="doctor.id"
+          :item="doctor"
+          :show-schedule="!!month"
+          :timezone="timezone"
+        />
+      </div>
     </section>
-    <section v-if="site.hospital.value?.address || site.hospital.value?.phone || site.hospital.value?.email" class="panel mt-10 p-6 sm:p-8">
-      <h2 class="text-xl font-semibold">Kontak</h2>
-      <p v-if="site.hospital.value?.address" class="mt-5 flex items-start gap-3 text-sm leading-relaxed text-slate-700"><MapPin :size="18" class="mt-0.5 shrink-0 text-brand-700" /><span>{{ site.hospital.value.address }}</span></p>
-      <p v-if="site.hospital.value?.phone" class="mt-4 flex items-center gap-3 text-sm text-slate-700"><Phone :size="18" class="text-brand-700" /><span>{{ site.hospital.value.phone }}</span></p>
-      <p v-if="site.hospital.value?.email" class="mt-4 text-sm text-slate-700">{{ site.hospital.value.email }}</p>
+    <section v-if="hospital?.about.trim()" id="tentang" class="public-section">
+      <div class="public-about grid gap-7 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
+        <div>
+          <p class="public-eyebrow">Tentang rumah sakit</p>
+          <h2 class="public-section-title mt-4">{{ identity.name }}</h2>
+          <p class="mt-4 text-sm text-brand-700">{{ identity.city }}</p>
+        </div>
+        <div class="whitespace-pre-line text-sm leading-8 text-slate-700 sm:text-base">{{ hospital.about }}</div>
+      </div>
     </section>
+    <section v-if="news.length" class="public-section border-t border-slate-100">
+      <PublicSectionHeading eyebrow="Informasi terbaru" title="Berita & pengumuman" link="/berita" link-label="Semua berita" />
+      <div class="grid gap-5 md:grid-cols-3">
+        <PublicNewsCard v-for="(item, index) in latestNews" :key="item.id" :item="item" :featured="index === 0" />
+      </div>
+    </section>
+    <div v-if="contacts.length" class="pb-12 pt-3 sm:pb-16">
+      <PublicContactPanel :name="identity.name" :contacts="contacts" />
+    </div>
   </div>
 </template>
