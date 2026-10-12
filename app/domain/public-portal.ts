@@ -12,12 +12,12 @@ export interface PublicNavItem { to: string; label: string; active: boolean }
 export interface PublicContactItem { id: string; label: string; text: string; href: string | null; external: boolean }
 export interface PublicDay { value: string; label: string; weekday: string; number: string; today: boolean }
 export interface PublicScheduleItem {
-  id: string; doctorId: string; doctorName: string; initials: string; date: string;
+  id: string; doctorId: string; doctorName: string; initials: string; photoUrl: string | null; date: string;
   dateLabel: string; unit: PublicUnit; unitLabel: string; tone: PublicTone;
   code: string; label: string; timeLabel: string; hoursLabel: string; note: string;
 }
 export interface PublicDoctorItem {
-  id: string; name: string; initials: string; unitLabel: string; tone: PublicTone;
+  id: string; name: string; initials: string; photoUrl: string | null; unitLabel: string; tone: PublicTone;
   scheduleUrl: string; nextDuty: PublicScheduleItem | null;
 }
 export interface PublicNewsItem {
@@ -91,12 +91,12 @@ export function publicDayWindow(days: PublicDay[], selected: string): PublicDay[
   const start = Math.max(0, Math.min(index - 3, days.length - 7))
   return days.slice(start, start + 7)
 }
-export function publicScheduleItem(row: PublicScheduleRow): PublicScheduleItem {
+export function publicScheduleItem(row: PublicScheduleRow, photoUrl: string | null = null): PublicScheduleItem {
   const hasTimes = !!row.start && !!row.end
   const overnight = hasTimes && row.end! <= row.start!
   return {
     id: [row.date, row.doctorId, row.unit, row.code].join(':'),
-    doctorId: row.doctorId, doctorName: row.doctorName, initials: publicInitials(row.doctorName), date: row.date,
+    doctorId: row.doctorId, doctorName: row.doctorName, initials: publicInitials(row.doctorName), photoUrl, date: row.date,
     dateLabel: publicDateLabel(row.date), unit: row.unit, unitLabel: unitNames[row.unit], tone: row.unit === 'anak' ? 'lime' : 'teal',
     code: row.code, label: row.label,
     timeLabel: hasTimes ? `${timeText(row.start!)} – ${timeText(row.end!)}` : row.hours ? `${row.hours} jam` : 'Waktu belum tersedia',
@@ -106,9 +106,10 @@ export function publicScheduleItem(row: PublicScheduleRow): PublicScheduleItem {
 }
 export function publicScheduleResults(hospital: PublicHospital | null, date: string, query = '', unit: PublicUnitFilter = 'all'): PublicScheduleItem[] {
   const search = normalized(query)
+  const photos = new Map(hospital?.doctors.map(doctor => [doctor.id, doctor.photoUrl ?? null]))
   return (hospital?.schedule.rows ?? []).filter(row => row.date === date && (unit === 'all' || row.unit === unit) && normalized(row.doctorName).includes(search))
     .slice().sort((a, b) => (a.start ?? '99:99').localeCompare(b.start ?? '99:99') || a.doctorName.localeCompare(b.doctorName, 'id-ID'))
-    .map(publicScheduleItem)
+    .map(row => publicScheduleItem(row, photos.get(row.doctorId) ?? null))
 }
 export function publicDoctorItems(hospital: PublicHospital | null, now = new Date()): PublicDoctorItem[] {
   if (!hospital) return []
@@ -117,9 +118,10 @@ export function publicDoctorItems(hospital: PublicHospital | null, now = new Dat
     const next = hospital.schedule.rows.filter(row => row.doctorId === doctor.id && row.date >= today)
       .slice().sort((a, b) => a.date.localeCompare(b.date) || (a.start ?? '99:99').localeCompare(b.start ?? '99:99'))[0]
     return {
-      id: doctor.id, name: doctor.name, initials: publicInitials(doctor.name), unitLabel: doctor.unit === 'anak' ? 'Ruang anak' : 'IGD dan ruangan',
+      id: doctor.id, name: doctor.name, initials: publicInitials(doctor.name), photoUrl: doctor.photoUrl ?? null,
+      unitLabel: doctor.unit === 'anak' ? 'Ruang anak' : 'IGD dan ruangan',
       tone: doctor.unit === 'anak' ? 'lime' : 'teal', scheduleUrl: '/jadwal-dokter?' + new URLSearchParams({ dokter: doctor.name }),
-      nextDuty: next ? publicScheduleItem(next) : null,
+      nextDuty: next ? publicScheduleItem(next, doctor.photoUrl ?? null) : null,
     }
   })
 }
