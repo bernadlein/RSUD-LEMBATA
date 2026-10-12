@@ -49,7 +49,7 @@ export function useWorkspace() {
   async function initialize(client: SupabaseClient | null, authSession: Session | null) {
     session.value = authSession
     if (mode === 'supabase') {
-      if (!client) { error.value = 'Konfigurasi Supabase belum lengkap. Isi URL dan anon key pada environment Vercel.'; loading.value = false; return }
+      if (!client) { error.value = 'Login belum tersedia.'; loading.value = false; return }
       repository = new SupabaseWorkspaceRepository(client)
       if (!authSession) { loadGeneration++; data.value = null; role.value = 'viewer'; needsWorkspace.value = false; loading.value = false; return }
     } else repository = new LocalWorkspaceRepository(window.localStorage)
@@ -63,7 +63,7 @@ export function useWorkspace() {
       assertRole(role.value, admin)
       const next = parseWorkspace(transform(cloneWorkspace(data.value)))
       validateChange(data.value, next, role.value, admin)
-      record(next, action, session.value?.user.email ?? 'Admin demo')
+      record(next, action, session.value?.user.email ?? 'Administrator')
       saving.value = true
       const nextRevision = await request.repository.save(request.id, next, revision.value, action, admin)
       if (!stillCurrent()) return false
@@ -77,7 +77,7 @@ export function useWorkspace() {
   }
   async function createWorkspace(name: string) {
     const client = useNuxtApp().$db
-    if (!client) throw new Error('Supabase belum terhubung.')
+    if (!client) throw new Error('Layanan akun belum tersedia.')
     const w = createEmptyWorkspace(); w.settings.hospital = name.trim()
     const { error: rpcError } = await client.rpc('rd_create_workspace', { p_name: name.trim(), p_data: parseWorkspace(w) })
     if (rpcError) throw new Error(rpcError.message)
