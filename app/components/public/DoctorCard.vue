@@ -1,13 +1,18 @@
 <script setup lang="ts">
+import PublicDoctorPortrait from './DoctorPortrait.vue'
 import type { PublicDoctorItem } from '../../domain/public-portal'
 defineProps<{ item: PublicDoctorItem; showSchedule: boolean; timezone: string }>()
 </script>
 <template>
   <article class="public-card public-doctor-card" :class="{ 'is-lime': item.tone === 'lime' }">
     <div class="flex items-center gap-4">
-      <span class="public-avatar public-avatar-large" :class="{ 'is-lime': item.tone === 'lime' }" aria-hidden="true">
-        {{ item.initials }}
-      </span>
+      <PublicDoctorPortrait
+        :photo-url="item.photoUrl"
+        :name="item.name"
+        :initials="item.initials"
+        :tone="item.tone"
+        size="large"
+      />
       <div>
         <h3 class="text-lg font-semibold tracking-tight">{{ item.name }}</h3>
         <p class="mt-1.5 text-xs text-slate-600">{{ item.unitLabel }}</p>
