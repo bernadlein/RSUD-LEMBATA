@@ -1,19 +1,19 @@
-# Ruang Dinas
+# RSUD LEWOLEBA
 
-Aplikasi manajemen jadwal dokter berbasis **Nuxt 4, Tailwind CSS 4, dan TypeScript**. Tampilan menggunakan turquoise dan hijau terang yang terinspirasi Kemenkes, font Inter yang disimpan bersama aplikasi, dan ikon garis tanpa emoji.
+Aplikasi portal informasi RS, jadwal dokter, dan absensi berbasis **Nuxt 4, Tailwind CSS 4, dan TypeScript**. Tampilan memakai latar terang, turquoise, hijau terang, dan font Inter. Login memakai akun email/password Supabase dengan peran fasilitas. Informasi publik tersedia tanpa login.
 
 ## Mulai cepat
 
-Gunakan Node.js **24** dan npm. Ekstrak ZIP, lalu buka terminal di folder yang berisi `package.json`.
+Gunakan Node.js **24** dan npm. Buka terminal di folder yang berisi `package.json`.
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Buka alamat lokal yang ditampilkan terminal. Tanpa environment tambahan, aplikasi berjalan dalam **mode demo lokal**. Data contoh menggunakan nama Dokter 01–09; perubahan disimpan pada browser tersebut.
+Buka alamat lokal yang ditampilkan terminal. Penggunaan tim memerlukan environment Supabase dan migrasi 001–004. Tanpa koneksi tersebut, login belum tersedia. Lihat **[docs/DEPLOY.md](docs/DEPLOY.md)** untuk konfigurasi dan **[docs/LOGIN_AWAL.md](docs/LOGIN_AWAL.md)** untuk akun pertama. Tidak ada akun admin atau password bawaan.
 
-Untuk memakai jadwal asli Oktober, buka **Pengaturan → Cadangan data → Pilih berkas JSON**, pilih berkas `Jadwal_RSUD_Lewoleba_2026-10.json` yang diberikan terpisah, lalu konfirmasi impor. Berkas data asli tidak dimasukkan ke source code atau aset publik.
+Untuk memakai berkas jadwal yang sudah dimiliki, setelah login buka **Pengaturan → Cadangan data → Pilih berkas JSON** dan konfirmasi impor. Ruang kerja baru tidak memuat jadwal contoh. Data historis untuk fixture pengujian tidak diimpor ke aplikasi yang dibundel.
 
 Panduan unggah GitHub dan deploy Vercel tersedia di **[docs/DEPLOY.md](docs/DEPLOY.md)**.
 
@@ -21,11 +21,14 @@ Panduan unggah GitHub dan deploy Vercel tersedia di **[docs/DEPLOY.md](docs/DEPL
 
 | Halaman | Fungsi |
 |---|---|
-| Ringkasan | Total jam, perbandingan dokter, catatan pola, dan legenda jam |
+| Portal publik | Profil RS, jadwal dinas yang diterbitkan, dan berita |
+| Ringkasan (`/dashboard`) | Total jam, perbandingan dokter, catatan pola, dan legenda jam |
 | Jadwal bulanan | Isian kode, tampilan kode/jam/keduanya, pencarian, filter layanan, bulan baru/salin, kunci bulan dan tanggal |
 | Rekap jam kerja | Dinas, jam, libur, cuti, belum mulai, pemerataan berdasarkan ketersediaan, saran pertukaran yang ditinjau sebelum diterapkan |
 | Kode & jam dinas | Master kode, jam khusus, template A/B/8 jam, snapshot jam per bulan |
-| Daftar dokter | Identitas, ruang anak, tanggal bergabung, cuti, status aktif |
+| Daftar dokter | Identitas, foto kartu dokter, ruang anak, tanggal bergabung, cuti, status aktif |
+| Absensi | QR fasilitas, tautan akun dokter, pemeriksaan lokasi masuk/pulang, rekap dan CSV |
+| Portal & lokasi RS | Draf/publikasi informasi RS serta pengaturan radius absensi; khusus admin |
 | Cetak jadwal | Dokumen A4 landscape dengan jam dinas, nama pengesah, NIP, dan ruang tanda tangan; simpan PDF melalui dialog browser |
 | Pengaturan | Fasilitas, aturan, periode, batas bulan, impor/cadangan JSON, audit perubahan, pengguna dan peran |
 
@@ -64,10 +67,10 @@ Mode Supabase menyimpan satu aggregate JSON per ruang kerja dengan revisi transa
 
 | Mode | Perilaku |
 |---|---|
-| Demo | Penyimpanan browser, tanpa login; peran admin demo. Tidak berbagi data antarbrowser. |
+| Belum terhubung | Informasi publik dan halaman masuk dapat dibuka; fitur internal memerlukan sesi akun. |
 | Supabase | Akun email/password, data bersama PostgreSQL, admin/planner/viewer, RLS, validasi server, optimistic concurrency, dan audit server. |
 
-Kunci pada mode demo adalah kontrol pengeditan di aplikasi. Penggunaan bersama memakai Supabase agar izin juga diterapkan oleh server/database. Akun pembaca dapat melihat, mengekspor, dan mencetak data ruang kerjanya. Nomor HP tidak dimasukkan ke dokumen cetak; berkas cadangan tetap memuat data ruang kerja.
+Penggunaan bersama memakai Supabase agar izin diterapkan oleh server/database. Akun pembaca dapat melihat, mengekspor, dan mencetak data ruang kerjanya. Nomor HP tidak dimasukkan ke dokumen cetak; berkas cadangan tetap memuat data ruang kerja. Absensi, foto Storage, draf/publikasi portal, dan lokasi RS memakai penyimpanan terpisah dan tidak tercakup dalam cadangan JSON jadwal.
 
 Pengguna kedua mendaftar dan memverifikasi email, kemudian admin menambahkan email tersebut pada **Pengaturan → Hak akses**. Aplikasi tidak mengirim undangan khusus. Admin terakhir tidak dapat dihapus atau diturunkan perannya.
 
