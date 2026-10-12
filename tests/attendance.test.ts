@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createDemoWorkspace, createEmptyWorkspace } from '../app/domain/seed'
+import { createEmptyWorkspace } from '../app/domain/seed'
+import { createDemoWorkspace } from './fixtures/workspace'
 import { cloneWorkspace, createMonth, applyTimeTemplate } from '../app/domain/commands'
 import { parseWorkspace } from '../app/domain/schema'
 import { DOCTOR_ROSTER, applyDoctorRoster, initialRosterChoices, orderedDoctors } from '../app/domain/doctor-roster'
