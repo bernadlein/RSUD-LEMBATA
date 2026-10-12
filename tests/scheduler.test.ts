@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { generateMonth, applyGeneratedMonth } from '../app/domain/scheduler'
-import { createDemoWorkspace } from '../app/domain/seed'
+import { createDemoWorkspace } from './fixtures/workspace'
 import { applyTimeTemplate, cloneWorkspace, createMonth } from '../app/domain/commands'
 import { coverage, inspectPlan, isAvailable } from '../app/domain/analysis'
 import { addDays, monthDates } from '../app/domain/calendar'
