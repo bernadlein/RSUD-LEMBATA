@@ -3,6 +3,7 @@ import type { Workspace } from './types'
 import { orderedDoctors } from './doctor-roster'
 import { monthDates } from './calendar'
 import { planShifts, shiftHours } from './shifts'
+import { isPublicDoctorPhotoUrl, isPublicDoctorPhotoVersion, publicDoctorPhotoUrl, publicDoctorPhotoVersion } from './public-doctor-photo'
 
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value => {
@@ -27,7 +28,10 @@ export const publicHospitalSchema = z.object({
   timezone: z.enum(['Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura']),
   about: z.string().max(4000), address: z.string().max(500), phone: z.string().max(40),
   email: z.string().max(180), services: z.array(z.string().max(120)).max(20),
-  doctors: z.array(z.object({ id: z.string().max(80), name: z.string().max(100), unit: z.enum(['rotasi', 'anak']) })).max(100),
+  doctors: z.array(z.object({
+    id: z.string().max(80), name: z.string().max(100), unit: z.enum(['rotasi', 'anak']),
+    photoUrl: z.string().max(220).refine(isPublicDoctorPhotoUrl).nullable().optional(),
+  })).max(100),
   schedule: z.object({
     month: month.nullable(),
     rows: z.array(z.object({
@@ -39,6 +43,13 @@ export const publicHospitalSchema = z.object({
   news: z.array(news).max(30), publishedAt: z.string(),
 })
 export type PublicHospital = z.infer<typeof publicHospitalSchema>
+export const publishedHospitalSchema = publicHospitalSchema.extend({
+  doctors: z.array(z.object({
+    id: z.string().max(80), name: z.string().max(100), unit: z.enum(['rotasi', 'anak']),
+    photoVersion: z.string().refine(isPublicDoctorPhotoVersion).nullable().optional(),
+  })).max(100),
+})
+export type PublishedHospital = z.infer<typeof publishedHospitalSchema>
 export type PublicNews = z.infer<typeof news>
 export interface PortalState { data: PortalDraft; revision: number; publishedAt: string | null }
 
@@ -47,7 +58,7 @@ export function emptyPortalDraft(): PortalDraft {
 }
 
 /** Build a deliberate public projection; private workspace fields never enter it. */
-export function buildPublicHospital(w: Workspace, input: PortalDraft, workspaceId: string, publishedAt: string): PublicHospital {
+export function buildPublicHospital(w: Workspace, input: PortalDraft, workspaceId: string, publishedAt: string): PublishedHospital {
   const draft = portalDraftSchema.parse(input)
   const doctors = orderedDoctors(w.doctors.filter(d => d.active))
   const rows: PublicHospital['schedule']['rows'] = []
@@ -65,12 +76,27 @@ export function buildPublicHospital(w: Workspace, input: PortalDraft, workspaceI
       })
     }
   }
-  return publicHospitalSchema.parse({
+  return publishedHospitalSchema.parse({
     schemaVersion: 1, workspaceId, name: w.settings.hospital, city: w.settings.city, timezone: w.settings.timezone,
     about: draft.about, address: draft.address, phone: draft.phone, email: draft.email, services: draft.services,
-    doctors: doctors.map(d => ({ id: d.id, name: d.name, unit: d.unit })),
+    doctors: doctors.map(d => {
+      const photoVersion = publicDoctorPhotoVersion(d.photoPath, d.id, workspaceId)
+      return { id: d.id, name: d.name, unit: d.unit, ...(photoVersion ? { photoVersion } : {}) }
+    }),
     schedule: { month: draft.scheduleMonth, rows },
     news: draft.news.filter(n => n.published).map(n => ({ id: n.id, title: n.title, summary: n.summary, content: n.content, date: n.date })),
     publishedAt,
+  })
+}
+
+/** Resolve public image URLs from an approved snapshot without exposing storage paths. */
+export function readPublicHospital(input: unknown): PublicHospital {
+  const published = publishedHospitalSchema.parse(input)
+  return publicHospitalSchema.parse({
+    ...published,
+    doctors: published.doctors.map(doctor => ({
+      id: doctor.id, name: doctor.name, unit: doctor.unit,
+      photoUrl: publicDoctorPhotoUrl(doctor.photoVersion, doctor.id),
+    })),
   })
 }
