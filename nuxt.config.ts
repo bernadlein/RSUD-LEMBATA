@@ -16,6 +16,7 @@ export default defineNuxtConfig({
       storageMode: 'demo',
       supabaseUrl: '',
       supabaseAnonKey: '',
+      hospitalId: '',
     },
   },
   app: {
@@ -25,12 +26,12 @@ export default defineNuxtConfig({
       meta: [
         { name: 'description', content: 'Susun jadwal dokter, hitung jam dinas, dan cetak jadwal bulanan.' },
         { name: 'robots', content: 'noindex, nofollow' },
-        { name: 'theme-color', content: '#008e91' },
+        { name: 'theme-color', content: '#00a8b5' },
       ],
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     },
   },
   routeRules: {
-    '/**': { headers: { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin' } },
+    '/**': { headers: { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'Permissions-Policy': 'geolocation=(self)' } },
   },
 })
