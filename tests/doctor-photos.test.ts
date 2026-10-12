@@ -124,11 +124,11 @@ describe('photo storage adapter', () => {
     expect(h.from).toHaveBeenCalledWith('rd-doctor-photos')
   })
 
-  it('rejects raw uploads and reports a missing bucket with the exact migration', async () => {
+  it('rejects raw uploads and reports an unavailable photo service', async () => {
     const h = storageHarness()
     await expect(h.repo.upload(workspaceId, 'doctor-01', new Blob(['png'], { type: 'image/png' }))).rejects.toThrow('format')
     expect(h.bucket.upload).not.toHaveBeenCalled()
     h.bucket.upload.mockResolvedValue({ error: { message: 'Bucket not found' } } as never)
-    await expect(h.repo.upload(workspaceId, 'doctor-01', new Blob(['jpeg'], { type: 'image/jpeg' }))).rejects.toThrow('003_doctor_photos.sql')
+    await expect(h.repo.upload(workspaceId, 'doctor-01', new Blob(['jpeg'], { type: 'image/jpeg' }))).rejects.toThrow('Penyimpanan foto belum tersedia.')
   })
 })
