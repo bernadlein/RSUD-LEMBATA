@@ -7,7 +7,7 @@ import { assertWorkspacePhotoScope } from '../../app/domain/doctor-photo'
 
 const requestSchema = z.object({ id: z.string().uuid(), expectedRevision: z.number().int().nonnegative(), action: z.string().min(1).max(250), administration: z.boolean().default(false), data: z.unknown() })
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig(event)
   if (config.public.storageMode !== 'supabase' || !config.public.supabaseUrl || !config.public.supabaseAnonKey || !config.supabaseServiceRoleKey) throw createError({ statusCode: 503, statusMessage: 'Penyimpanan bersama belum dikonfigurasi.' })
   const header = getHeader(event, 'authorization')
   if (!header?.startsWith('Bearer ')) throw createError({ statusCode: 401, statusMessage: 'Masuk terlebih dahulu.' })
@@ -21,6 +21,7 @@ export default defineEventHandler(async (event) => {
   catch { throw createError({ statusCode: 400, statusMessage: 'Format perubahan tidak valid.' }) }
   const { data: membership, error: memberError } = await publicClient.from('rd_members').select('role').eq('workspace_id', input.id).eq('user_id', auth.user.id).maybeSingle()
   if (memberError || !membership) throw createError({ statusCode: 403, statusMessage: 'Akun tidak memiliki akses ke ruang kerja ini.' })
+  if (membership.role !== 'admin') throw createError({ statusCode: 403, statusMessage: 'Hanya administrator yang dapat mengubah data.' })
   const { data: existing, error: loadError } = await publicClient.from('rd_workspaces').select('data,revision').eq('id', input.id).single()
   if (loadError || !existing) throw createError({ statusCode: 404, statusMessage: 'Ruang kerja tidak ditemukan.' })
   if (existing.revision !== input.expectedRevision) throw createError({ statusCode: 409, statusMessage: 'Data berubah oleh pengguna lain. Muat ulang sebelum menyimpan.' })
