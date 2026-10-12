@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PublicDoctorPortrait from './DoctorPortrait.vue'
 import type { PublicScheduleItem } from '../../domain/public-portal'
 defineProps<{ item: PublicScheduleItem; timezone: string }>()
 </script>
@@ -11,7 +12,7 @@ defineProps<{ item: PublicScheduleItem; timezone: string }>()
       <span class="rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600">{{ item.code }}</span>
     </div>
     <div class="mt-6 flex items-center gap-3">
-      <span class="public-avatar" :class="{ 'is-lime': item.tone === 'lime' }" aria-hidden="true">{{ item.initials }}</span>
+      <PublicDoctorPortrait :photo-url="item.photoUrl" :name="item.doctorName" :initials="item.initials" :tone="item.tone" />
       <h3 class="text-lg font-semibold tracking-tight">{{ item.doctorName }}</h3>
     </div>
     <div class="public-duty-time">
