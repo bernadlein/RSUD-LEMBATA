@@ -13,7 +13,7 @@ const nav = computed(() => [
   ...(w.isAdmin.value ? [{ to: '/portal', label: 'Portal & lokasi RS', icon: Globe }] : []),
 ])
 const mobileNav = computed(() => nav.value.filter(n => ['/dashboard', '/jadwal', '/dokter', '/absen'].includes(n.to)))
-const roleLabel = computed(() => ({ admin: 'Administrator', planner: 'Penyusun jadwal', viewer: 'Pembaca' }[w.role.value]))
+const roleLabel = computed(() => w.isAdmin.value ? 'Administrator' : 'Pembaca')
 let media: MediaQueryList | null = null
 function resize() { desktop.value = !!media?.matches; if (desktop.value) open.value = false }
 function keydown(event: KeyboardEvent) { if (event.key === 'Escape') open.value = false }
@@ -35,7 +35,7 @@ async function logout() { await useNuxtApp().$db?.auth.signOut(); await navigate
         <NuxtLink v-for="item in nav" :key="item.to" :to="item.to" class="flex min-h-12 items-center gap-3 rounded-xl px-3.5 py-3 text-[13px] font-medium transition-colors" :class="route.path === item.to ? 'bg-brand-100 text-brand-800' : 'text-slate-600 hover:bg-brand-50 hover:text-brand-700'" :aria-current="route.path === item.to ? 'page' : undefined"><component :is="item.icon" :size="18" :stroke-width="1.7" />{{ item.label }}</NuxtLink>
       </nav>
       <div class="mt-auto px-5 pt-8 pb-6">
-        <NuxtLink to="/pengaturan" class="mb-3 flex min-h-11 items-center gap-3 rounded-xl px-3 text-[13px] text-slate-600 hover:bg-brand-50" :class="route.path === '/pengaturan' ? 'bg-brand-50 text-brand-800' : ''"><Settings2 :size="18" />Pengaturan</NuxtLink>
+        <NuxtLink v-if="w.isAdmin.value" to="/pengaturan" class="mb-3 flex min-h-11 items-center gap-3 rounded-xl px-3 text-[13px] text-slate-600 hover:bg-brand-50" :class="route.path === '/pengaturan' ? 'bg-brand-50 text-brand-800' : ''"><Settings2 :size="18" />Pengaturan</NuxtLink>
         <NuxtLink to="/" class="btn btn-secondary mb-5 w-full"><Globe :size="15" />Lihat portal publik</NuxtLink>
         <div class="rounded-2xl border border-brand-100 bg-[#f7fbe8] p-4"><div class="flex items-center gap-2 text-brand-700"><ShieldCheck :size="16" /><span class="text-sm font-medium">{{ roleLabel }}</span></div></div>
       </div>
@@ -46,7 +46,7 @@ async function logout() { await useNuxtApp().$db?.auth.signOut(); await navigate
         <div class="flex items-center gap-2 sm:gap-4">
           <span class="hidden items-center gap-2 text-xs text-slate-600 sm:flex" aria-live="polite"><span class="h-1.5 w-1.5 rounded-full bg-brand-500" />{{ w.saving.value ? 'Menyimpan…' : 'Tersimpan' }}</span>
           <button class="rounded-xl p-2.5 text-slate-600 hover:bg-brand-50 disabled:opacity-40" :disabled="w.loading.value || w.saving.value" aria-label="Muat ulang data" @click="w.reload()"><RefreshCw :size="16" :class="w.loading.value ? 'animate-spin' : ''" /></button>
-          <div class="flex items-center gap-2.5 border-l border-slate-200 pl-3"><div class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-100 text-xs font-semibold text-brand-800">{{ w.role.value === 'admin' ? 'AD' : w.role.value === 'planner' ? 'PJ' : 'PB' }}</div><p class="hidden text-xs font-medium md:block">{{ roleLabel }}</p></div>
+          <div class="flex items-center gap-2.5 border-l border-slate-200 pl-3"><div class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-100 text-xs font-semibold text-brand-800">{{ w.isAdmin.value ? 'AD' : 'PB' }}</div><p class="hidden text-xs font-medium md:block">{{ roleLabel }}</p></div>
           <button aria-label="Keluar" class="rounded-xl p-2.5 text-slate-600 hover:bg-brand-50" @click="logout"><LogOut :size="16" /></button>
         </div>
       </header>
