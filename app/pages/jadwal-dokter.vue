@@ -1,30 +1,90 @@
 <script setup lang="ts">
+import { Search } from '@lucide/vue'
 import { HOSPITAL_NAME } from '../domain/branding'
-import { CalendarDays, Search, Clock3 } from '@lucide/vue'
-import { attendanceDate } from '../domain/attendance'
-import { monthDates, monthLabel, prettyDate } from '../domain/calendar'
+import PublicPageHero from '../components/public/PageHero.vue'
+import PublicScheduleCard from '../components/public/ScheduleCard.vue'
+import PublicStatusPanel from '../components/public/StatusPanel.vue'
+
 definePageMeta({ layout: 'public' })
-const site = usePublicHospital(), selected = ref(''), query = ref('')
-const days = computed(() => site.hospital.value?.schedule.month ? monthDates(site.hospital.value.schedule.month) : [])
-const rows = computed(() => site.hospital.value?.schedule.rows.filter(row => row.date === selected.value && row.doctorName.toLowerCase().includes(query.value.trim().toLowerCase())) ?? [])
-watch(() => site.hospital.value?.schedule.month, () => {
-  const today = attendanceDate(new Date(), site.hospital.value?.timezone || 'Asia/Makassar')
-  selected.value = days.value.includes(today) ? today : days.value[0] ?? ''
-}, { immediate: true })
-const units = { igd: 'IGD', ruangan: 'Ruangan', anak: 'Ruang anak', lain: 'Layanan lainnya' }
-useSeoMeta({ title: () => 'Jadwal dokter · ' + (site.hospital.value?.name || HOSPITAL_NAME), robots: 'index, follow' })
+const { pending, error, refresh, days, month, timezone, updatedAt, selected, query, unit, results, date, windowDays, doctorCount, availableUnits, clearFilters } = usePublicSchedule()
+useSeoMeta({ title: 'Jadwal dokter · ' + HOSPITAL_NAME, description: 'Jadwal dinas dokter RSUD LEWOLEBA menurut tanggal dan unit pelayanan.', robots: 'index, follow' })
 </script>
 <template>
-  <div class="mx-auto max-w-7xl px-5 py-9 lg:px-8">
-    <section class="app-hero rounded-[1.75rem] p-7 sm:p-9"><p class="eyebrow text-brand-700">JADWAL PELAYANAN</p><h1 class="mt-4 text-3xl font-semibold tracking-tight">Jadwal dinas dokter</h1><p v-if="site.hospital.value?.schedule.month" class="mt-4 text-sm font-semibold text-brand-800">{{ monthLabel(site.hospital.value.schedule.month) }}</p></section>
-    <p v-if="site.pending.value" class="panel mt-6 p-7 text-sm text-slate-600">Memuat jadwal…</p>
-    <section v-else-if="site.error.value" class="panel mt-6 p-7"><p class="text-sm text-slate-600">Jadwal belum dapat dimuat.</p><button class="btn btn-secondary mt-4" @click="site.refresh()">Coba lagi</button></section>
-    <section v-else-if="!days.length" class="panel mt-6 p-8 text-sm text-slate-600">Jadwal belum tersedia.</section>
+  <PublicPageHero eyebrow="Jadwal pelayanan" title="Jadwal dokter" :meta="month" />
+  <div class="public-container public-section">
+    <PublicStatusPanel v-if="pending && !days.length" state="loading" title="Memuat jadwal…" />
+    <PublicStatusPanel
+      v-else-if="error"
+      state="error"
+      title="Jadwal belum dapat dimuat."
+      action-label="Coba lagi"
+      @action="refresh()"
+    />
+    <PublicStatusPanel v-else-if="!days.length" state="empty" title="Jadwal belum tersedia." />
     <template v-else>
-      <div class="mt-6 flex flex-col gap-3 sm:flex-row"><div class="sm:w-64"><label for="public-day" class="label">Tanggal dinas</label><select id="public-day" v-model="selected" class="field"><option v-for="day in days" :key="day" :value="day">{{ prettyDate(day) }}</option></select></div><div class="flex-1"><label for="public-search" class="label">Cari dokter</label><div class="relative"><Search class="absolute top-3 left-3 text-slate-600" :size="17" /><input id="public-search" v-model="query" class="field pl-10" /></div></div></div>
-      <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"><article v-for="row in rows" :key="row.doctorId" class="panel p-6"><div class="flex items-start justify-between gap-3"><div><h2 class="text-lg font-semibold">{{ row.doctorName }}</h2><p class="mt-2 text-xs text-slate-600">{{ units[row.unit] }}</p></div><span class="tag bg-brand-50 text-brand-800">{{ row.code }}</span></div><div class="mt-5 rounded-xl bg-brand-50/60 p-4"><p class="flex items-center gap-2 text-xs text-brand-700"><Clock3 :size="14" />Jam dinas</p><p class="mt-3 text-xl font-semibold tabular-nums">{{ row.start && row.end ? row.start + '–' + row.end : 'Perlu konfirmasi' }}</p><p v-if="row.start && row.end && row.end <= row.start" class="mt-2 text-xs text-slate-600">Selesai pada hari berikutnya.</p></div><p class="mt-4 text-xs leading-relaxed text-slate-600">{{ row.label }}</p></article></div>
-      <section v-if="!rows.length" class="panel mt-6 p-8 text-center"><CalendarDays class="mx-auto text-brand-600" :size="26" /><p class="mt-4 text-sm text-slate-600">Tidak ada jadwal yang cocok pada tanggal dan pencarian ini.</p></section>
-      
+      <section class="public-filter-panel" aria-label="Filter jadwal dokter">
+        <div class="grid gap-5 md:grid-cols-[1fr_1.25fr_0.85fr]">
+          <div>
+            <label for="public-day" class="label">Tanggal dinas</label>
+            <select id="public-day" v-model="selected" class="field min-h-12">
+              <option v-for="day in days" :key="day.value" :value="day.value">{{ day.label }}</option>
+            </select>
+          </div>
+          <div>
+            <label for="public-search" class="label">Nama dokter</label>
+            <div class="relative">
+              <Search :size="17" class="pointer-events-none absolute top-4 left-3.5 text-slate-600" aria-hidden="true" />
+              <input id="public-search" v-model="query" type="search" class="field min-h-12 pl-10" autocomplete="off" />
+            </div>
+          </div>
+          <div>
+            <label for="public-unit" class="label">Unit pelayanan</label>
+            <select id="public-unit" v-model="unit" class="field min-h-12">
+              <option v-for="option in availableUnits" :key="option.value" :value="option.value">{{ option.label }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt-6 flex gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-7 sm:gap-3" role="group" aria-label="Pilihan tanggal dinas">
+          <button
+            v-for="day in windowDays"
+            :key="day.value"
+            type="button"
+            class="public-date-button"
+            :class="{ 'is-selected': selected === day.value, 'is-today': day.today }"
+            :aria-pressed="selected === day.value"
+            :aria-label="day.label + (day.today ? ', hari ini' : '')"
+            @click="selected = day.value"
+          >
+            <span class="text-[11px] sm:text-xs">{{ day.weekday }}</span>
+            <span class="text-lg font-semibold tabular-nums sm:text-xl">{{ day.number }}</span>
+          </button>
+        </div>
+      </section>
+      <div class="public-result-bar" aria-live="polite" aria-atomic="true">
+        <div>
+          <h2 class="text-base font-semibold tracking-tight">{{ date?.label }}</h2>
+          <p class="mt-2 text-xs text-slate-600">{{ doctorCount }} dokter · Waktu {{ timezone }}</p>
+        </div>
+        <button
+          v-if="query.trim() || unit !== 'all'"
+          type="button"
+          class="public-text-link min-h-11"
+          @click="clearFilters"
+        >
+          Hapus filter
+        </button>
+      </div>
+      <div v-if="results.length" class="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <PublicScheduleCard v-for="row in results" :key="row.id" :item="row" :timezone="timezone" />
+      </div>
+      <PublicStatusPanel
+        v-else
+        state="empty"
+        title="Tidak ada jadwal yang sesuai."
+        :action-label="query.trim() || unit !== 'all' ? 'Hapus filter' : undefined"
+        @action="clearFilters"
+      />
+      <p v-if="updatedAt" class="mt-8 text-xs text-slate-600">Jadwal diperbarui {{ updatedAt }}</p>
     </template>
   </div>
 </template>
