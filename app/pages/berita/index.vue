@@ -1,12 +1,47 @@
 <script setup lang="ts">
-import { HOSPITAL_NAME } from '../../domain/branding'
 import { Search } from '@lucide/vue'
-import { prettyDate } from '../../domain/calendar'
+import { HOSPITAL_NAME } from '../../domain/branding'
+import PublicPageHero from '../../components/public/PageHero.vue'
+import PublicNewsCard from '../../components/public/NewsCard.vue'
+import PublicStatusPanel from '../../components/public/StatusPanel.vue'
+
 definePageMeta({ layout: 'public' })
-const site = usePublicHospital(), query = ref('')
-const rows = computed(() => [...(site.hospital.value?.news ?? [])].filter(n => (n.title + ' ' + n.summary).toLowerCase().includes(query.value.trim().toLowerCase())).sort((a, b) => b.date.localeCompare(a.date)))
-useSeoMeta({ title: () => 'Berita · ' + (site.hospital.value?.name || HOSPITAL_NAME), robots: 'index, follow' })
+const { pending, error, refresh, query, results, featured, remaining } = usePublicNews()
+useSeoMeta({ title: 'Berita & pengumuman · ' + HOSPITAL_NAME, description: 'Berita dan pengumuman RSUD LEWOLEBA.', robots: 'index, follow' })
 </script>
 <template>
-  <div class="mx-auto max-w-7xl px-5 py-9 lg:px-8"><section class="app-hero rounded-[1.75rem] p-7 sm:p-9"><p class="eyebrow text-brand-700">INFORMASI TERBARU</p><h1 class="mt-4 text-3xl font-semibold tracking-tight">Berita dan pengumuman RS</h1></section><div class="relative mt-6 max-w-xl"><Search class="absolute top-3 left-3 text-slate-600" :size="17" /><input v-model="query" class="field pl-10" aria-label="Cari berita" /></div><p v-if="site.pending.value" class="panel mt-6 p-7 text-sm text-slate-600">Memuat berita…</p><section v-else-if="site.error.value" class="panel mt-6 p-7"><p class="text-sm text-slate-600">Berita belum dapat dimuat.</p><button class="btn btn-secondary mt-4" @click="site.refresh()">Coba lagi</button></section><div v-else-if="rows.length" class="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3"><article v-for="item in rows" :key="item.id" class="panel flex flex-col p-6"><p class="text-xs font-medium text-brand-700">{{ prettyDate(item.date) }}</p><h2 class="mt-4 text-xl font-semibold leading-snug">{{ item.title }}</h2><p class="mt-4 flex-1 text-sm leading-relaxed text-slate-600">{{ item.summary || item.content.slice(0, 180) }}</p><NuxtLink :to="'/berita/' + item.id" class="mt-6 text-sm font-semibold text-brand-700">Baca berita</NuxtLink></article></div><p v-else class="panel mt-6 p-8 text-sm text-slate-600">{{ query ? 'Tidak ada hasil pencarian.' : 'Belum ada berita.' }}</p></div>
+  <PublicPageHero eyebrow="Informasi rumah sakit" title="Berita & pengumuman" />
+  <div class="public-container public-section">
+    <div class="mb-8 flex flex-wrap items-end justify-between gap-5">
+      <div class="w-full max-w-xl">
+        <label for="public-news-search" class="label">Cari berita</label>
+        <div class="relative">
+          <Search :size="17" class="pointer-events-none absolute top-4 left-3.5 text-slate-600" aria-hidden="true" />
+          <input id="public-news-search" v-model="query" type="search" class="field min-h-12 pl-10" autocomplete="off" />
+        </div>
+      </div>
+      <p v-if="!pending && !error && results.length" class="text-xs text-slate-600" role="status">{{ results.length }} berita</p>
+    </div>
+    <PublicStatusPanel v-if="pending && !results.length" state="loading" title="Memuat berita…" />
+    <PublicStatusPanel
+      v-else-if="error"
+      state="error"
+      title="Berita belum dapat dimuat."
+      action-label="Coba lagi"
+      @action="refresh()"
+    />
+    <template v-else-if="results.length">
+      <PublicNewsCard v-if="featured" :item="featured" heading="h2" featured class="mb-6" />
+      <div v-if="remaining.length" class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <PublicNewsCard v-for="item in remaining" :key="item.id" :item="item" heading="h2" />
+      </div>
+    </template>
+    <PublicStatusPanel
+      v-else
+      state="empty"
+      :title="query.trim() ? 'Tidak ada hasil pencarian.' : 'Belum ada berita yang diterbitkan.'"
+      :action-label="query.trim() ? 'Hapus pencarian' : undefined"
+      @action="query = ''"
+    />
+  </div>
 </template>
