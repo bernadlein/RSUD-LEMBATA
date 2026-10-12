@@ -1,4 +1,5 @@
 import tailwindcss from '@tailwindcss/vite'
+import { HOSPITAL_NAME } from './app/domain/branding'
 
 export default defineNuxtConfig({
   compatibilityDate: '2026-10-01',
@@ -13,7 +14,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     supabaseServiceRoleKey: '',
     public: {
-      storageMode: 'demo',
+      storageMode: 'supabase',
       supabaseUrl: '',
       supabaseAnonKey: '',
       hospitalId: '',
@@ -21,10 +22,10 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'Ruang Dinas · Jadwal Dokter',
+      title: HOSPITAL_NAME,
       htmlAttrs: { lang: 'id' },
       meta: [
-        { name: 'description', content: 'Susun jadwal dokter, hitung jam dinas, dan cetak jadwal bulanan.' },
+        { name: 'description', content: 'Jadwal dokter dan berita RSUD LEWOLEBA.' },
         { name: 'robots', content: 'noindex, nofollow' },
         { name: 'theme-color', content: '#00a8b5' },
       ],
