@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createDemoWorkspace } from '../app/domain/seed'
+import { createDemoWorkspace } from './fixtures/workspace'
 import { coverage, fairness, inspectPlan, summarize } from '../app/domain/analysis'
 import { applySwap, applyTimeTemplate, cloneWorkspace, createMonth, setAssignment, suggestFairSwap } from '../app/domain/commands'
 import { clockLabel, shiftHours } from '../app/domain/shifts'
