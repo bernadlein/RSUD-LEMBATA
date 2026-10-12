@@ -6,7 +6,6 @@ import { SupabaseWorkspaceRepository } from '../repositories/supabase-workspace-
 import { assertRole, cloneWorkspace, record } from '../domain/commands'
 import { parseWorkspace } from '../domain/schema'
 import { coverage, fairness, inspectPlan, summarize } from '../domain/analysis'
-import { createEmptyWorkspace } from '../domain/seed'
 import { validateChange } from '../domain/permissions'
 
 let repository: WorkspaceRepository | null = null
@@ -30,7 +29,7 @@ export function useWorkspace() {
   const issues = computed(() => data.value && plan.value ? inspectPlan(data.value, plan.value) : [])
   const balance = computed(() => data.value && plan.value ? fairness(data.value, plan.value) : { rows: [], min: 0, max: 0, spread: 0, average: 0 })
   const blocks = computed(() => data.value && plan.value ? coverage(data.value, plan.value) : [])
-  const canEdit = computed(() => role.value !== 'viewer' && !saving.value)
+  const canEdit = computed(() => role.value === 'admin' && !saving.value)
   const isAdmin = computed(() => role.value === 'admin')
 
   async function reload() {
@@ -40,10 +39,14 @@ export function useWorkspace() {
     try {
       const loaded = await repository.load()
       if (generation !== loadGeneration) return
-      if (!loaded) { needsWorkspace.value = !!session.value; data.value = null; return }
+      if (!loaded) { needsWorkspace.value = !!session.value; data.value = null; id.value = ''; role.value = 'viewer'; return }
       data.value = loaded.data; revision.value = loaded.revision; id.value = loaded.id; role.value = loaded.role; needsWorkspace.value = false
       if (!data.value.plans[activeMonth.value]) activeMonth.value = Object.keys(data.value.plans).sort().at(-1) ?? '2026-10'
-    } catch (e) { if (generation === loadGeneration) error.value = (e as Error).message }
+    } catch (e) {
+      if (generation === loadGeneration) {
+        error.value = (e as Error).message; data.value = null; id.value = ''; role.value = 'viewer'; needsWorkspace.value = !!session.value
+      }
+    }
     finally { if (generation === loadGeneration) loading.value = false }
   }
   async function initialize(client: SupabaseClient | null, authSession: Session | null) {
@@ -75,13 +78,5 @@ export function useWorkspace() {
     } catch (e) { if (stillCurrent()) notify((e as Error).message, true); return false }
     finally { saving.value = false }
   }
-  async function createWorkspace(name: string) {
-    const client = useNuxtApp().$db
-    if (!client) throw new Error('Layanan akun belum tersedia.')
-    const w = createEmptyWorkspace(); w.settings.hospital = name.trim()
-    const { error: rpcError } = await client.rpc('rd_create_workspace', { p_name: name.trim(), p_data: parseWorkspace(w) })
-    if (rpcError) throw new Error(rpcError.message)
-    await reload()
-  }
-  return { data, revision, id, role, session, activeMonth, months, plan, loading, saving, error, needsWorkspace, summaries, issues, balance, blocks, canEdit, isAdmin, mode, reload, initialize, mutate, createWorkspace, getRepository: () => repository }
+  return { data, revision, id, role, session, activeMonth, months, plan, loading, saving, error, needsWorkspace, summaries, issues, balance, blocks, canEdit, isAdmin, mode, reload, initialize, mutate, getRepository: () => repository }
 }
