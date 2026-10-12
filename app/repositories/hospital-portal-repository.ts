@@ -4,7 +4,7 @@ import { attendanceLocationSchema, type AttendanceLocation, type AttendanceLocat
 
 function fail(error: { code?: string; message: string } | null) {
   if (!error) return
-  if (['42P01', 'PGRST202', 'PGRST205'].includes(error.code ?? '')) throw new Error('Portal dan lokasi belum diaktifkan. Jalankan 004_portal_location.sql di Supabase.')
+  if (['42P01', 'PGRST202', 'PGRST205'].includes(error.code ?? '')) throw new Error('Layanan portal dan lokasi belum tersedia.')
   throw new Error(error.message)
 }
 export class HospitalPortalRepository {
