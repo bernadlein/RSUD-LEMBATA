@@ -307,32 +307,36 @@
     color: var(--color-brand-700);
   }
 
-  .public-avatar {
-    display: flex;
+  .public-portrait {
+    display: grid;
     width: 44px;
-    height: 44px;
+    height: 55px;
     flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
+    place-items: center;
+    overflow: hidden;
     border: 1px solid #d2eeeb;
-    border-radius: 14px;
+    border-radius: 12px;
     background: #edfafa;
     color: var(--color-brand-700);
     font-size: .85rem;
     font-weight: 600;
   }
-
-  .public-avatar.is-lime {
+  .public-portrait.is-lime {
     border-color: #dfedc6;
     background: #eff8d7;
     color: var(--color-brand-800);
   }
-
-  .public-avatar-large {
-    width: 60px;
-    height: 64px;
+  .public-portrait.is-large {
+    width: 96px;
+    height: 120px;
     border-radius: 18px;
-    font-size: 1.15rem;
+    font-size: 1.65rem;
+  }
+  .public-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
   }
 
   .public-doctor-card {
