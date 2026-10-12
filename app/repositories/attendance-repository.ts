@@ -2,18 +2,20 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { attendanceSchema, doctorAccountSchema } from '../domain/attendance'
 import type { Attendance, DoctorAccount } from '../domain/attendance'
 import { addDays, monthDates } from '../domain/calendar'
+import { locationReadingSchema, type LocationReading, type AttendanceLocation } from '../domain/geolocation'
+import { HospitalPortalRepository } from './hospital-portal-repository'
 
 function fail(error: { message: string; code?: string } | null) {
   if (!error) return
-  if (['42P01', 'PGRST202', 'PGRST205'].includes(error.code ?? '')) throw new Error('Absensi belum diaktifkan. Admin perlu menjalankan migrasi 002_attendance.sql di Supabase.')
+  if (['42P01', 'PGRST202', 'PGRST205'].includes(error.code ?? '')) throw new Error('Layanan absensi belum tersedia.')
   throw new Error(error.message)
 }
 export interface AttendanceRepository {
-  load(workspaceId: string, month: string, today: string): Promise<{ records: Attendance[]; recent: Attendance[]; open: Attendance[]; accounts: DoctorAccount[] }>
+  load(workspaceId: string, month: string, today: string): Promise<{ records: Attendance[]; recent: Attendance[]; open: Attendance[]; accounts: DoctorAccount[]; location: AttendanceLocation | null }>
   qr(workspaceId: string, rotate?: boolean): Promise<string>
   bind(workspaceId: string, doctorId: string, userId: string): Promise<void>
   unbind(workspaceId: string, doctorId: string): Promise<void>
-  mark(workspaceId: string, token: string, action: 'masuk' | 'pulang', date: string): Promise<Attendance>
+  mark(workspaceId: string, token: string, action: 'masuk' | 'pulang', date: string, location: LocationReading): Promise<Attendance>
 }
 export class SupabaseAttendanceRepository implements AttendanceRepository {
   constructor(private client: SupabaseClient) {}
@@ -34,7 +36,8 @@ export class SupabaseAttendanceRepository implements AttendanceRepository {
       this.client.from('rd_attendance').select('*').eq('workspace_id', workspaceId).gte('duty_date', addDays(today, -1)).lte('duty_date', today).limit(200),
     ])
     results.forEach(r => fail(r.error))
-    return { records, open: attendanceSchema.array().parse(results[0].data ?? []), accounts: doctorAccountSchema.array().parse(results[1].data ?? []), recent: attendanceSchema.array().parse(results[2].data ?? []) }
+    const location = await new HospitalPortalRepository(this.client).location(workspaceId)
+    return { records, open: attendanceSchema.array().parse(results[0].data ?? []), accounts: doctorAccountSchema.array().parse(results[1].data ?? []), recent: attendanceSchema.array().parse(results[2].data ?? []), location }
   }
   async qr(workspaceId: string, rotate = false): Promise<string> {
     const { data, error } = await this.client.rpc('rd_get_attendance_qr', { p_workspace_id: workspaceId, p_rotate: rotate }); fail(error)
@@ -47,8 +50,14 @@ export class SupabaseAttendanceRepository implements AttendanceRepository {
   async unbind(workspaceId: string, doctorId: string) {
     const { error } = await this.client.rpc('rd_unbind_doctor_account', { p_workspace_id: workspaceId, p_doctor_id: doctorId }); fail(error)
   }
-  async mark(workspaceId: string, token: string, action: 'masuk' | 'pulang', date: string): Promise<Attendance> {
-    const { data, error } = await this.client.rpc('rd_mark_attendance', { p_workspace_id: workspaceId, p_qr_token: token, p_action: action, p_duty_date: date }); fail(error)
+  async mark(workspaceId: string, token: string, action: 'masuk' | 'pulang', date: string, location: LocationReading): Promise<Attendance> {
+    const point = locationReadingSchema.parse(location)
+    const { data, error } = await this.client.rpc('rd_mark_attendance', {
+      p_workspace_id: workspaceId, p_qr_token: token, p_action: action, p_duty_date: date,
+      p_latitude: point.latitude, p_longitude: point.longitude, p_accuracy: point.accuracy, p_captured_at: point.capturedAt,
+    })
+    if (['PGRST202', 'PGRST203'].includes(error?.code ?? '')) throw new Error('Layanan absensi lokasi belum tersedia.')
+    fail(error)
     return attendanceSchema.parse(data)
   }
 }
