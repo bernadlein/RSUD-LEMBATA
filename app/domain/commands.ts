@@ -5,7 +5,9 @@ import { parseWorkspace } from './schema'
 import { planShifts, shiftHours } from './shifts'
 
 export const cloneWorkspace = (w: Workspace): Workspace => JSON.parse(JSON.stringify(w))
-export function assertRole(role: Role, admin = false) { if (role === 'viewer' || (admin && role !== 'admin')) throw new Error(admin ? 'Hanya admin yang dapat mengubah bagian ini.' : 'Akun pembaca tidak dapat mengubah jadwal.') }
+export function assertRole(role: Role, _administration = false) {
+  if (role !== 'admin') throw new Error('Hanya administrator yang dapat mengubah data.')
+}
 export function assertEditable(p: MonthPlan, day: number, role: Role) {
   assertRole(role)
   if (p.locked) throw new Error('Bulan ini sudah dikunci. Minta admin membuka kunci terlebih dahulu.')
