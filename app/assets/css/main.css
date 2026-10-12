@@ -39,9 +39,9 @@
   .table-head { @apply bg-slate-50/80 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500; }
   .tag { @apply inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium; }
   .doctor-card { @apply overflow-hidden rounded-[1.5rem] border border-slate-200/70 bg-white shadow-[0_10px_32px_-25px_rgba(16,28,33,0.4)] transition-[transform,box-shadow] duration-200 motion-safe:hover:-translate-y-1 hover:shadow-[0_18px_38px_-24px_rgba(16,28,33,0.35)]; }
-  .doctor-poster { background: radial-gradient(ellipse at 85% 10%, #00a8b577, transparent 55%), linear-gradient(145deg, #18353d, #101c21 80%); }
-  .doctor-poster-child { background: radial-gradient(ellipse at 85% 10%, #c6ee4266, transparent 55%), linear-gradient(145deg, #263b2a, #101c21 80%); }
-  .app-hero { background: radial-gradient(ellipse at 95% 0%, #00a8b54d, transparent 55%), #101c21; }
+  .doctor-poster { background: radial-gradient(ellipse at 85% 10%, #00a8b526, transparent 55%), linear-gradient(145deg, #f0fcfc, #d5f2f3); }
+  .doctor-poster-child { background: radial-gradient(ellipse at 85% 10%, #c6ee4273, transparent 55%), linear-gradient(145deg, #fbffe9, #edf8ce); }
+  .app-hero { border: 1px solid #a5e4e8; background: radial-gradient(ellipse at 100% 0%, #c6ee424d, transparent 48%), linear-gradient(125deg, #edfafa, #d5f2f3 65%, #f6fbeb); }
 }
 
 .scrollbar-thin { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
