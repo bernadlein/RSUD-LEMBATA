@@ -1,26 +1,30 @@
 <script setup lang="ts">
-import { Menu, X, LogIn, LayoutDashboard } from '@lucide/vue'
-import { HOSPITAL_NAME } from '../domain/branding'
-const site = usePublicHospital(), w = useWorkspace(), route = useRoute(), open = ref(false)
-const name = HOSPITAL_NAME
-const links = [{ to: '/', label: 'Beranda' }, { to: '/jadwal-dokter', label: 'Jadwal dokter' }, { to: '/berita', label: 'Berita RS' }]
-const active = (to: string) => to === '/' ? route.path === '/' : route.path.startsWith(to)
-watch(() => route.fullPath, () => { open.value = false })
+import '../assets/css/public.css'
+import PublicSiteHeader from '../components/public/SiteHeader.vue'
+import PublicSiteFooter from '../components/public/SiteFooter.vue'
+
+const { identity, contacts, phone, navigation, account, currentPath, year } = usePublicPortal()
 </script>
 <template>
-  <div class="flex min-h-dvh flex-col bg-white">
-    <a href="#public-content" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-100 focus:rounded-lg focus:bg-white focus:p-3">Lewati ke konten</a>
-    <header class="sticky top-0 z-40 border-b border-brand-100 bg-white/95 backdrop-blur-lg">
-      <div class="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-4 px-5 lg:px-8">
-        <NuxtLink to="/" class="flex min-w-0 items-center gap-3"><img src="/favicon.svg" alt="" class="h-8 w-8 shrink-0 sm:h-11 sm:w-11" /><div class="min-w-0"><p class="text-sm font-semibold sm:text-lg">{{ name }}</p></div></NuxtLink>
-        <nav class="hidden items-center gap-1 md:flex" aria-label="Informasi publik"><NuxtLink v-for="link in links" :key="link.to" :to="link.to" class="rounded-xl px-4 py-3 text-sm font-medium" :class="active(link.to) ? 'bg-brand-50 text-brand-800' : 'text-slate-600 hover:bg-brand-50'" :aria-current="active(link.to) ? 'page' : undefined">{{ link.label }}</NuxtLink></nav>
-        <div class="flex items-center gap-2"><NuxtLink :to="w.session.value ? '/dashboard' : '/masuk'" class="btn" :class="w.session.value ? 'btn-lime' : 'btn-primary'"><component :is="w.session.value ? LayoutDashboard : LogIn" :size="15" class="hidden sm:block" /><span>{{ w.session.value ? 'Ruang kerja' : 'Masuk' }}</span></NuxtLink><button class="btn btn-secondary p-3 md:hidden" :aria-expanded="open" aria-controls="public-menu" aria-label="Buka menu informasi" @click="open = !open"><component :is="open ? X : Menu" :size="18" /></button></div>
-      </div>
-      <nav v-if="open" id="public-menu" class="grid gap-1 border-t border-brand-100 px-5 py-3 md:hidden" aria-label="Informasi publik ponsel"><NuxtLink v-for="link in links" :key="link.to" :to="link.to" class="rounded-xl px-4 py-3 text-sm font-medium" :class="active(link.to) ? 'bg-brand-50 text-brand-800' : 'text-slate-600'">{{ link.label }}</NuxtLink></nav>
-    </header>
-    <main id="public-content" class="flex-1"><slot /></main>
-    <footer class="mt-12 border-t border-brand-100 bg-brand-50/60">
-      <div class="mx-auto grid max-w-7xl gap-7 px-5 py-8 sm:grid-cols-2 lg:px-8"><div><p class="font-semibold">{{ name }}</p><p v-if="site.hospital.value?.address" class="mt-3 max-w-md text-sm leading-relaxed text-slate-600">{{ site.hospital.value.address }}</p><p class="mt-3 text-xs text-slate-600">© {{ new Date().getFullYear() }} {{ name }}</p></div><div class="flex flex-wrap items-start gap-6 text-sm text-brand-800"><NuxtLink to="/jadwal-dokter">Jadwal dokter</NuxtLink><NuxtLink to="/berita">Berita RS</NuxtLink><NuxtLink to="/masuk">Masuk</NuxtLink></div></div>
-    </footer>
+  <div class="public-site flex min-h-dvh flex-col">
+    <a
+      href="#public-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-100 focus:rounded-lg focus:bg-white focus:p-3"
+    >
+      Lewati ke konten
+    </a>
+    <PublicSiteHeader
+      :name="identity.name"
+      :city="identity.city"
+      :links="navigation"
+      :phone="phone"
+      :account-url="account.url"
+      :account-label="account.label"
+      :current-path="currentPath"
+    />
+    <main id="public-content" class="flex-1" tabindex="-1">
+      <slot />
+    </main>
+    <PublicSiteFooter :name="identity.name" :city="identity.city" :links="navigation" :contacts="contacts" :year="year" />
   </div>
 </template>
