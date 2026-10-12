@@ -43,7 +43,7 @@ export const workspaceSchema = z.object({
 
 export function parseWorkspace(input: unknown): Workspace {
   const parsed = workspaceSchema.safeParse(input)
-  if (!parsed.success) throw new Error('Format data tidak sesuai. Gunakan berkas cadangan Ruang Dinas versi 1.')
+  if (!parsed.success) throw new Error('Format data jadwal tidak valid.')
   const data = parsed.data
   const doctorIds = new Set(data.doctors.map(d => d.id))
   const codes = new Set(data.shifts.map(s => s.code))
