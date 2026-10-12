@@ -1,21 +1,14 @@
-import demo from '../data/demo-workspace.json'
+import defaults from '../data/workspace-defaults.json'
 import { parseWorkspace } from './schema'
 import type { Workspace } from './types'
 import { newRosterDoctors } from './doctor-roster'
+import { HOSPITAL_NAME, HOSPITAL_CITY } from './branding'
 export function createDemoWorkspace(): Workspace {
-  const w = parseWorkspace(JSON.parse(JSON.stringify(demo)))
-  const names = new Map(newRosterDoctors().map(d => [d.id, d.name]))
-  w.doctors.forEach(d => { d.name = names.get(d.id) ?? d.name })
-  return w
+  return createEmptyWorkspace()
 }
 export function createEmptyWorkspace(): Workspace {
-  const w = createDemoWorkspace()
-  w.doctors = newRosterDoctors()
-  w.plans = {}
-  w.settings.hospital = 'Rumah Sakit Anda'
-  w.settings.city = 'Kota Anda'
-  w.settings.director = ''
-  w.settings.sectionHead = ''
-  w.audit = []
-  return w
+  return parseWorkspace({
+    schemaVersion: 1, settings: { ...JSON.parse(JSON.stringify(defaults.settings)), hospital: HOSPITAL_NAME, city: HOSPITAL_CITY },
+    doctors: newRosterDoctors(), shifts: JSON.parse(JSON.stringify(defaults.shifts)), plans: {}, audit: [],
+  })
 }
