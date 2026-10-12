@@ -13,7 +13,7 @@ export interface DoctorPhotoRepository {
 function fail(error: { message: string } | null): void {
   if (!error) return
   if (/bucket.*not found|does not exist/i.test(error.message)) {
-    throw new Error('Penyimpanan foto belum tersedia. Jalankan 003_doctor_photos.sql di Supabase.')
+    throw new Error('Penyimpanan foto belum tersedia.')
   }
   if (/row.level|permission|unauthorized|not authorized/i.test(error.message)) {
     throw new Error('Akun belum diizinkan mengakses foto. Periksa hak akses dan penerapan SQL foto.')
