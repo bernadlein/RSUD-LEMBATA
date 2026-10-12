@@ -58,22 +58,22 @@ watch(() => [w.id.value, w.session.value?.user.id ?? '', w.role.value].join('|')
 </script>
 
 <template>
-  <PageHeading title="Tim dokter" subtitle="Kenali tim pelayanan, lihat beban dinas, dan kelola ketersediaan setiap dokter." eyebrow="Tim pelayanan">
+  <PageHeading title="Tim dokter" eyebrow="Tim pelayanan">
     <MonthSelect />
     <button v-if="w.isAdmin.value" class="btn btn-primary" :disabled="editorBusy" @click="open()"><Plus :size="16" />Tambah dokter</button>
   </PageHeading>
 
-  <section class="app-hero mb-6 flex flex-col justify-between gap-6 rounded-[1.5rem] p-6 text-white sm:flex-row sm:items-center sm:p-8">
+  <section class="app-hero mb-6 flex flex-col justify-between gap-6 rounded-[1.5rem] p-6 text-ink sm:flex-row sm:items-center sm:p-8">
     <div>
-      <p class="text-[11px] font-medium tracking-widest text-brand-300">TIM PELAYANAN MEDIK</p>
-      <h2 class="mt-3 text-2xl font-semibold tracking-tight">{{ activeCount }} dokter, satu tim pelayanan.</h2>
-      <p class="mt-3 max-w-xl text-sm leading-relaxed text-white/60">Rotasi IGD dan ruangan, dengan pelayanan ruang anak yang ditangani khusus.</p>
+      <p class="text-xs font-medium tracking-widest text-brand-700">TIM PELAYANAN MEDIK</p>
+      <h2 class="mt-3 text-2xl font-semibold tracking-tight">{{ activeCount }} dokter aktif</h2>
+      
     </div>
     <button v-if="w.isAdmin.value" class="btn btn-lime shrink-0" :disabled="editorBusy" @click="openRoster"><UsersRound :size="16" />Sesuaikan 9 dokter</button>
   </section>
 
   <div class="mb-6 flex flex-col gap-3 sm:flex-row">
-    <div class="relative flex-1"><Search class="absolute top-3.5 left-3.5 text-slate-400" :size="16" /><input v-model="query" class="field pl-10" placeholder="Cari nama dokter" aria-label="Cari nama dokter" /></div>
+    <div class="relative flex-1"><Search class="absolute top-3.5 left-3.5 text-slate-600" :size="16" /><input v-model="query" class="field pl-10" aria-label="Cari nama dokter" /></div>
     <select v-model="unit" class="field sm:w-44" aria-label="Filter layanan"><option value="">Semua layanan</option><option value="rotasi">Rotasi layanan</option><option value="anak">Ruang anak</option></select>
     <select v-model="status" class="field sm:w-40" aria-label="Filter status dokter"><option value="active">Dokter aktif</option><option value="inactive">Nonaktif</option><option value="all">Semua status</option></select>
   </div>
@@ -85,19 +85,19 @@ watch(() => [w.id.value, w.session.value?.user.id ?? '', w.role.value].join('|')
   <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
     <DoctorCard v-for="row in rows" :key="row.doctor.id" :doctor="row.doctor" :number="row.number" :summary="summaries.get(row.doctor.id)" :photo-url="photos.urls.value[row.doctor.id]" :can-edit="w.isAdmin.value && !editorBusy" @edit="open" />
   </div>
-  <div v-if="!rows.length" class="panel p-10 text-center text-sm text-slate-500">Tidak ada dokter yang sesuai pencarian.</div>
-  <p class="mt-5 text-xs leading-relaxed text-slate-500">Jam dan hari dinas mengikuti bulan terpilih. Kelola data dokter untuk menyesuaikan foto, tanggal bergabung, serta cuti.</p>
+  <div v-if="!rows.length" class="panel p-10 text-center text-sm text-slate-600">Tidak ada dokter yang sesuai pencarian.</div>
+  
 
   <AppModal v-if="rosterModal" title="Sesuaikan sembilan dokter" wide @close="!w.saving.value && (rosterModal = false)">
     <form class="space-y-5" @submit.prevent="syncRoster">
-      <p class="text-sm leading-relaxed text-slate-600">Cocokkan setiap nama dengan dokter yang sudah terdaftar agar jadwal, cuti, dan absennya tetap terhubung. Pilih dokter baru hanya jika orang tersebut belum ada.</p>
+      
       <div class="space-y-3">
         <div v-for="(d, i) in DOCTOR_ROSTER" :key="d.name" class="grid items-center gap-2 sm:grid-cols-[120px_1fr]">
           <label :for="'roster-' + i" class="text-sm font-medium">{{ i + 1 }}. {{ d.name }}</label>
           <select :id="'roster-' + i" v-model="choices[i]" class="field" :disabled="w.saving.value"><option value="">Buat dokter baru</option><option v-for="old in w.data.value?.doctors" :key="old.id" :value="old.id">{{ old.name }}</option></select>
         </div>
       </div>
-      <p class="rounded-xl bg-brand-50 p-4 text-xs leading-relaxed text-brand-800">Daftar aktif akan memakai urutan ini. Dafrosa khusus ruang anak. Dokter lama yang tidak dipilih menjadi nonaktif; riwayatnya tetap tersimpan.</p>
+      <p class="rounded-xl bg-brand-50 p-4 text-xs leading-relaxed text-brand-800">Dokter yang tidak dipilih akan dinonaktifkan. Riwayat tetap tersimpan.</p>
       <div class="flex justify-end gap-2"><button type="button" class="btn btn-secondary" :disabled="w.saving.value" @click="rosterModal = false">Batal</button><button class="btn btn-primary" :disabled="w.saving.value">Terapkan daftar</button></div>
     </form>
   </AppModal>
@@ -108,27 +108,27 @@ watch(() => [w.id.value, w.session.value?.user.id ?? '', w.role.value].join('|')
         <section class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <p class="label">Foto dokter</p>
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div class="doctor-poster relative flex aspect-[4/5] w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl text-white">
+            <div class="doctor-poster relative flex aspect-[4/5] w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl text-brand-700">
               <img v-if="photos.previewUrl.value && !previewFailed" :src="photos.previewUrl.value" :alt="'Pratinjau foto ' + (edit.name || 'dokter')" class="h-full w-full object-cover" @error="previewFailed = true" />
               <span v-else class="text-3xl font-medium">{{ edit.name.replace(/^dr\.?\s*/i, '').slice(0, 2).toUpperCase() || 'DR' }}</span>
             </div>
             <div class="min-w-0 flex-1">
-              <p class="text-xs leading-relaxed text-slate-600">Gunakan foto portrait dengan wajah terlihat jelas. JPG, PNG, atau WebP, maksimal 5 MB.</p>
-              <p v-if="photos.canUpload.value" class="mt-2 text-xs leading-relaxed text-slate-500">Foto disesuaikan ke ukuran 4:5. Pratinjau akan tersimpan setelah Anda memilih Simpan dokter.</p>
-              <p v-else class="mt-2 text-xs leading-relaxed text-slate-500">Unggah foto tersedia pada akun fasilitas. Mode demo menampilkan inisial dokter.</p>
+              
+              
+              
               <input ref="photoInput" class="sr-only" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Pilih foto dokter" :disabled="!photos.canUpload.value" @change="selectPhoto" />
               <div class="mt-3 flex flex-wrap gap-2">
                 <button type="button" class="btn btn-secondary" :disabled="!photos.canUpload.value" @click="photoInput?.click()"><ImagePlus :size="14" />{{ photos.hasPhoto.value ? 'Ganti foto' : 'Pilih foto' }}</button>
                 <button v-if="photos.hasPhoto.value" type="button" class="btn btn-secondary" @click="photos.remove()"><Trash2 :size="14" />Lepas foto</button>
               </div>
               <p v-if="photos.busy.value" class="mt-3 text-xs text-brand-700" role="status">Memproses dan menyimpan data…</p>
-              <p v-if="previewFailed" class="mt-3 text-xs text-amber-700">Foto belum dapat ditampilkan. Anda dapat memilih foto pengganti.</p>
+              <p v-if="previewFailed" class="mt-3 text-xs text-amber-700">Foto belum dapat ditampilkan.</p>
             </div>
           </div>
           <p v-if="photos.error.value" class="mt-3 text-xs leading-relaxed text-red-700" role="alert">{{ photos.error.value }}</p>
         </section>
 
-        <div><label for="doctor-name" class="label">Nama dokter</label><input id="doctor-name" v-model="edit.name" class="field" required maxlength="100" placeholder="Nama dokter" /></div>
+        <div><label for="doctor-name" class="label">Nama dokter</label><input id="doctor-name" v-model="edit.name" class="field" required maxlength="100" /></div>
         <div><label for="doctor-phone" class="label">Nomor HP (opsional)</label><input id="doctor-phone" v-model="edit.phone" class="field" inputmode="tel" maxlength="30" /></div>
         <div class="grid gap-4 sm:grid-cols-2">
           <div><label for="doctor-unit" class="label">Layanan</label><select id="doctor-unit" v-model="edit.unit" class="field"><option value="rotasi">Rotasi layanan</option><option value="anak">Ruang anak saja</option></select></div>
@@ -139,9 +139,9 @@ watch(() => [w.id.value, w.session.value?.user.id ?? '', w.role.value].join('|')
           <div v-for="(l, i) in edit.leave" :key="i" class="mb-2 grid grid-cols-[1fr_1fr_auto] items-center gap-2">
             <input v-model="l.from" class="field" type="date" required :aria-label="'Mulai cuti ' + (i + 1)" />
             <input v-model="l.to" class="field" type="date" required :min="l.from" :aria-label="'Selesai cuti ' + (i + 1)" />
-            <button type="button" class="p-1 text-xs text-slate-500" aria-label="Hapus periode cuti" @click="edit.leave.splice(i, 1)">Hapus</button>
+            <button type="button" class="p-1 text-xs text-slate-600" aria-label="Hapus periode cuti" @click="edit.leave.splice(i, 1)">Hapus</button>
           </div>
-          <p v-if="!edit.leave.length" class="rounded-xl bg-slate-50 p-3 text-xs text-slate-500">Belum ada cuti.</p>
+          <p v-if="!edit.leave.length" class="rounded-xl bg-slate-50 p-3 text-xs text-slate-600">Belum ada cuti.</p>
         </div>
         <label class="flex items-center gap-2 text-xs text-slate-600"><input v-model="edit.active" type="checkbox" />Dokter aktif untuk jadwal baru</label>
         <div class="flex justify-end gap-2 pt-2">
