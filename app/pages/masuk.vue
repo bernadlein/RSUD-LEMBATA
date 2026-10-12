@@ -1,24 +1,54 @@
 <script setup lang="ts">
-import { ArrowRight, ShieldCheck, CalendarDays, Clock3 } from '@lucide/vue'
-definePageMeta({ layout: false })
-const db = useNuxtApp().$db, w = useWorkspace(), { notify } = useNotifications()
-const registering = ref(false), email = ref(''), password = ref(''), busy = ref(false), message = ref('')
+import { CalendarDays, MapPin, ShieldCheck, Eye, EyeOff } from '@lucide/vue'
+import { safePrivateReturn } from '../domain/auth-routing'
+definePageMeta({ layout: 'public' })
+const db = useNuxtApp().$db, w = useWorkspace(), route = useRoute(), { notify } = useNotifications()
+const registering = ref(false), email = ref(''), password = ref(''), visible = ref(false), busy = ref(false), message = ref('')
+useSeoMeta({ title: 'Masuk · Ruang Dinas', robots: 'noindex, nofollow' })
 async function submit() {
-  if (!db) { notify('Konfigurasi Supabase belum lengkap.', true); return }
+  if (!db || busy.value) return
   busy.value = true; message.value = ''
   try {
+    const target = safePrivateReturn(route.query.returnTo)
     if (registering.value) {
-      const { error } = await db.auth.signUp({ email: email.value.trim(), password: password.value, options: { emailRedirectTo: `${window.location.origin}/masuk` } })
+      const redirect = new URL('/masuk', window.location.origin)
+      redirect.searchParams.set('returnTo', target)
+      const { error } = await db.auth.signUp({ email: email.value.trim(), password: password.value, options: { emailRedirectTo: redirect.toString() } })
       if (error) throw error
-      message.value = 'Akun terdaftar. Periksa email untuk verifikasi, kemudian masuk.'
+      message.value = 'Akun terdaftar. Verifikasi email, lalu minta admin rumah sakit menambahkan akses Anda.'
     } else {
       const { data, error } = await db.auth.signInWithPassword({ email: email.value.trim(), password: password.value })
       if (error) throw error
       await w.initialize(db, data.session)
-      await navigateTo(w.needsWorkspace.value ? '/mulai' : '/')
+      await navigateTo(w.needsWorkspace.value ? { path: '/mulai', query: { returnTo: target } } : target)
     }
-  } catch (e) { notify((e as Error).message, true) }
+  } catch (error) { notify((error as Error).message, true) }
   finally { busy.value = false }
 }
 </script>
-<template><main class="grid min-h-dvh lg:grid-cols-2"><section class="relative hidden overflow-hidden bg-brand-800 p-14 text-white lg:flex lg:flex-col"><NuxtLink to="/" class="flex items-center gap-3 text-xl font-bold"><img src="/favicon.svg" alt="" class="h-10 w-10"/>Ruang Dinas.</NuxtLink><div class="relative z-1 my-auto max-w-md"><p class="mb-5 text-xs font-semibold tracking-[0.14em] text-lime-soft uppercase">Untuk tim pelayanan</p><h1 class="text-4xl leading-tight font-semibold tracking-tight">Jadwal yang jelas.<br/>Jam kerja yang terukur.</h1><p class="mt-6 text-sm leading-relaxed text-brand-100/75">Susun dinas, periksa pola, dan lihat jam kerja setiap dokter dalam satu ruang kerja.</p><div class="mt-9 space-y-4"><p v-for="item in [{ icon: CalendarDays, label: 'Jadwal bulanan yang mudah diisi' }, { icon: Clock3, label: 'Durasi dihitung dari kode dinas' }, { icon: ShieldCheck, label: 'Hak akses sesuai peran pengguna' }]" :key="item.label" class="flex items-center gap-3 text-xs text-brand-100"><component :is="item.icon" :size="18" class="text-lime-soft"/>{{ item.label }}</p></div></div><p class="relative z-1 text-xs text-brand-100/50">Ruang Dinas · Manajemen jadwal dokter</p><div class="absolute -right-40 -bottom-40 h-[650px] w-[650px] rounded-full border-[80px] border-white/4"/></section><section class="flex items-center justify-center px-6 py-12"><div class="w-full max-w-sm"><img src="/favicon.svg" alt="Ruang Dinas" class="mb-8 h-12 w-12 lg:hidden"/><h2 class="text-2xl font-semibold tracking-tight">{{ registering ? 'Daftar akun' : 'Masuk ke ruang kerja' }}</h2><p class="mt-3 text-sm leading-relaxed text-slate-500">{{ registering ? 'Gunakan email yang akan ditambahkan oleh admin rumah sakit.' : 'Gunakan akun yang memiliki akses ke jadwal rumah sakit.' }}</p><div v-if="w.error.value" class="mt-5 rounded-xl bg-rose-50 p-4 text-xs leading-relaxed text-rose-700">{{ w.error.value }}</div><form class="mt-8 space-y-5" @submit.prevent="submit"><div><label for="email" class="label">Email</label><input id="email" v-model="email" type="email" class="field" autocomplete="email" required placeholder="nama@rumahsakit.id"/></div><div><label for="password" class="label">Kata sandi</label><input id="password" v-model="password" type="password" class="field" :autocomplete="registering ? 'new-password' : 'current-password'" :minlength="registering ? 10 : 1" required/></div><p v-if="message" class="rounded-xl bg-brand-50 p-4 text-xs leading-relaxed text-brand-800" role="status">{{ message }}</p><button class="btn btn-primary w-full" :disabled="busy || !db">{{ busy ? 'Memproses…' : registering ? 'Daftar' : 'Masuk' }}<ArrowRight :size="16"/></button></form><p class="mt-6 text-center text-xs text-slate-400">{{ registering ? 'Sudah memiliki akun?' : 'Belum memiliki akun?' }} <button class="font-semibold text-brand-700" @click="registering = !registering; message = ''">{{ registering ? 'Masuk' : 'Daftar' }}</button></p><p class="mt-10 text-center text-[10px] leading-relaxed text-slate-400">Akun baru belum memiliki akses ke jadwal sampai ditambahkan oleh admin.</p></div></section></main></template>
+<template>
+  <div class="mx-auto grid max-w-6xl gap-10 px-5 py-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-16 lg:px-8 lg:py-16">
+    <section class="app-hero relative overflow-hidden rounded-[2rem] p-7 sm:p-10">
+      <p class="eyebrow text-brand-700">RUANG KERJA TIM RUMAH SAKIT</p>
+      <h1 class="mt-5 max-w-md text-3xl leading-tight font-semibold tracking-tight sm:text-4xl">Pelayanan yang tertata dimulai dari tim yang terhubung.</h1>
+      <p class="mt-5 max-w-md text-sm leading-relaxed text-slate-600">Kelola jadwal dokter, pemerataan jam, foto tim, dan absensi melalui akun fasilitas.</p>
+      <div class="mt-8 space-y-4"><div v-for="item in [{ icon: CalendarDays, title: 'Jadwal dalam satu ruang kerja', text: 'Lihat dan kelola dinas sesuai peran Anda.' }, { icon: MapPin, title: 'Absensi di sekitar rumah sakit', text: 'QR bersama dengan pemeriksaan lokasi perangkat.' }, { icon: ShieldCheck, title: 'Akses yang terkelola', text: 'Akun baru menunggu persetujuan admin fasilitas.' }]" :key="item.title" class="flex items-start gap-4 rounded-2xl border border-white bg-white/80 p-4"><span class="rounded-xl bg-brand-100 p-2.5 text-brand-700"><component :is="item.icon" :size="18" /></span><div><h2 class="text-sm font-semibold">{{ item.title }}</h2><p class="mt-1 text-xs leading-relaxed text-slate-600">{{ item.text }}</p></div></div></div>
+      <NuxtLink to="/" class="mt-7 inline-block text-sm font-semibold text-brand-800">Kembali ke informasi publik</NuxtLink>
+    </section>
+    <section class="panel p-6 sm:p-8">
+      <p class="eyebrow text-brand-700">{{ registering ? 'PENDAFTARAN AKUN' : 'MASUK AKUN' }}</p>
+      <h2 class="mt-3 text-2xl font-semibold tracking-tight">{{ registering ? 'Buat akun tim' : 'Masuk ke ruang kerja' }}</h2>
+      <p class="mt-3 text-sm leading-relaxed text-slate-600">{{ registering ? 'Gunakan email yang akan ditambahkan oleh admin rumah sakit.' : 'Informasi publik tetap dapat dibaca tanpa akun. Masuk untuk membuka fitur tim.' }}</p>
+      <p v-if="!db" class="mt-5 rounded-xl bg-amber-50 p-4 text-xs leading-relaxed text-amber-800">Akses akun fasilitas sedang disiapkan. Informasi publik tetap bisa dibaca melalui Beranda.</p>
+      <p v-if="w.error.value" class="mt-5 rounded-xl bg-rose-50 p-4 text-xs leading-relaxed text-rose-700" role="alert">{{ w.error.value }}</p>
+      <form class="mt-7 space-y-5" @submit.prevent="submit">
+        <div><label for="email" class="label">Email</label><input id="email" v-model="email" type="email" class="field" autocomplete="email" required placeholder="nama@rumahsakit.id" /></div>
+        <div><label for="password" class="label">Kata sandi</label><div class="relative"><input id="password" v-model="password" :type="visible ? 'text' : 'password'" class="field pr-12" :autocomplete="registering ? 'new-password' : 'current-password'" :minlength="registering ? 10 : 1" required /><button type="button" class="absolute top-1 right-1 rounded-lg p-2.5 text-slate-500" :aria-label="visible ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'" @click="visible = !visible"><component :is="visible ? EyeOff : Eye" :size="17" /></button></div></div>
+        <p v-if="message" class="rounded-xl bg-brand-50 p-4 text-xs leading-relaxed text-brand-800" role="status">{{ message }}</p>
+        <button class="btn btn-primary w-full" :disabled="busy || !db">{{ busy ? 'Memproses…' : registering ? 'Daftar akun' : 'Masuk' }}</button>
+      </form>
+      <p class="mt-6 text-center text-xs text-slate-600">{{ registering ? 'Sudah memiliki akun?' : 'Belum memiliki akun?' }} <button class="font-semibold text-brand-700" :disabled="busy" @click="registering = !registering; message = ''">{{ registering ? 'Masuk' : 'Daftar akun' }}</button></p>
+      <p class="mt-6 border-t border-slate-100 pt-5 text-center text-[11px] leading-relaxed text-slate-500">Admin menentukan akses ke rumah sakit dan menghubungkan akun dengan nama dokter.</p>
+    </section>
+  </div>
+</template>
