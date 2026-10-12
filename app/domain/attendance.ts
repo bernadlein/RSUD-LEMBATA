@@ -7,6 +7,10 @@ import { planShifts, shiftHours } from './shifts'
 export const attendanceSchema = z.object({
   id: z.string().uuid(), workspace_id: z.string().uuid(), doctor_id: z.string(), doctor_name: z.string(), user_id: z.string().uuid().nullable(),
   duty_date: z.string(), shift_code: z.string(), scheduled_hours: z.coerce.number().positive(), scheduled_start: z.string(), scheduled_end: z.string(), check_in: z.string(), check_out: z.string().nullable(),
+  check_in_distance_meters: z.coerce.number().finite().nonnegative().nullable().optional(),
+  check_in_accuracy_meters: z.coerce.number().finite().nonnegative().nullable().optional(),
+  check_out_distance_meters: z.coerce.number().finite().nonnegative().nullable().optional(),
+  check_out_accuracy_meters: z.coerce.number().finite().nonnegative().nullable().optional(),
 })
 export const doctorAccountSchema = z.object({ workspace_id: z.string().uuid(), doctor_id: z.string(), user_id: z.string().uuid() })
 export type Attendance = z.infer<typeof attendanceSchema>
