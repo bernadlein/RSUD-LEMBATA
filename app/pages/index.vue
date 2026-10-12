@@ -4,6 +4,7 @@ import PublicSectionHeading from '../components/public/SectionHeading.vue'
 import PublicDoctorCard from '../components/public/DoctorCard.vue'
 import PublicNewsCard from '../components/public/NewsCard.vue'
 import PublicContactPanel from '../components/public/ContactPanel.vue'
+import PublicDoctorPortrait from '../components/public/DoctorPortrait.vue'
 
 definePageMeta({ layout: 'public' })
 const { hospital, pending, error, refresh, identity, contacts, doctors, news, latestNews, highlight, highlightRows, highlightPreview, highlightUrl, month, timezone, updatedAt } = usePublicPortal()
@@ -57,9 +58,7 @@ useSeoMeta({ title: HOSPITAL_NAME, description: () => hospital.value?.about.slic
           <div class="mt-5">
             <div v-for="row in highlightPreview" :key="row.id" class="public-highlight-row">
               <div class="flex min-w-0 items-center gap-3">
-                <span class="public-avatar" :class="{ 'is-lime': row.tone === 'lime' }" aria-hidden="true">
-                  {{ row.initials }}
-                </span>
+                <PublicDoctorPortrait :photo-url="row.photoUrl" :name="row.doctorName" :initials="row.initials" :tone="row.tone" />
                 <div class="min-w-0">
                   <p class="text-sm font-semibold">{{ row.doctorName }}</p>
                   <p class="mt-1 text-[11px] text-slate-600">{{ row.unitLabel }}</p>
