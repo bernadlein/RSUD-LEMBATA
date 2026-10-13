@@ -132,7 +132,7 @@ useSeoMeta({ title: HOSPITAL_NAME, description: () => hospital.value?.about.slic
         :link="month ? '/jadwal-dokter' : undefined"
         :link-label="month ? 'Jadwal seluruh dokter' : undefined"
       />
-      <div class="grid items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="grid items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-3">
         <PublicDoctorCard
           v-for="doctor in doctors"
           :key="doctor.id"
