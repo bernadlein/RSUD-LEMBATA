@@ -26,12 +26,20 @@ const plan = z.object({
   boundaries: z.record(z.string(), boundary), locked: z.boolean(),
   frozenThrough: z.number().int().min(0).max(31), validationFrom: z.number().int().min(1).max(31),
   shiftSnapshot: z.array(shift).min(1).max(100).optional(),
+  printDetails: z.object({
+    legendTitle: z.string().min(1).max(80),
+    legend: z.array(z.object({ code, label: z.string().min(1).max(180) })).max(100),
+    notes: z.array(z.string().min(1).max(2500)).max(20),
+    showPhone: z.boolean(), blankCode: code.optional(),
+  }).optional(),
 })
 export const workspaceSchema = z.object({
   schemaVersion: z.literal(1),
   settings: z.object({
     hospital: z.string().min(1).max(180), city: z.string().min(1).max(80), timezone: z.enum(['Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura']),
     director: z.string().max(120), directorNip: z.string().max(30), sectionHead: z.string().max(120), sectionHeadNip: z.string().max(30),
+    sectionHeadTitle: z.string().min(1).max(100).optional(),
+    signatureOrder: z.enum(['director-first', 'head-first']).optional(),
     signedDate: z.union([date, z.literal('')]), minGapHours: z.number().min(0).max(48),
     maxConsecutiveLong: z.number().int().min(1).max(2), offAfterLong: z.number().int().min(1).max(7),
     maxConsecutiveWork: z.number().int().min(1).max(14), minimumCoverage: z.number().int().min(1).max(10),
@@ -62,6 +70,7 @@ export function parseWorkspace(input: unknown): Workspace {
     const planCodes = new Set(p.shiftSnapshot!.map(s => s.code))
     if (planCodes.size !== p.shiftSnapshot!.length) throw new Error('Kode dinas pada snapshot bulan ganda.')
     p.shiftSnapshot!.forEach(validateShift)
+    if (p.printDetails?.blankCode && !p.shiftSnapshot!.some(s => s.code === p.printDetails!.blankCode && s.kind === 'not_started')) throw new Error('Kode kosong cetak harus berupa kode belum mulai.')
     const lastDay = new Date(Date.UTC(Number(key.slice(0, 4)), Number(key.slice(5, 7)), 0)).getUTCDate()
     if (p.frozenThrough > lastDay || p.validationFrom > lastDay) throw new Error('Batas periode melewati jumlah hari bulan ini.')
     for (const [id, cells] of Object.entries(p.assignments)) {
