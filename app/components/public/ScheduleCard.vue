@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import PublicDoctorPortrait from './DoctorPortrait.vue'
 import type { PublicScheduleItem } from '../../domain/public-portal'
+import { shiftColorClass } from '../../domain/shift-colors'
 defineProps<{ item: PublicScheduleItem; timezone: string }>()
 </script>
 <template>
-  <article class="public-card public-schedule-card" :class="{ 'is-lime': item.tone === 'lime' }">
+  <article class="public-card public-schedule-card" :class="shiftColorClass(item.code)">
     <div class="flex items-start justify-between gap-3">
       <span class="public-pill" :class="item.tone === 'lime' ? 'public-pill-lime' : 'public-pill-teal'">
         {{ item.unitLabel }}
       </span>
-      <span class="rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600">{{ item.code }}</span>
+      <span class="public-schedule-code shift-fill">{{ item.code }}</span>
     </div>
     <div class="mt-6 flex items-center gap-3">
       <PublicDoctorPortrait :photo-url="item.photoUrl" :name="item.doctorName" :initials="item.initials" :tone="item.tone" />
