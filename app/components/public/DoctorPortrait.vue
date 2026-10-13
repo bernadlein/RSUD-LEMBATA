@@ -3,12 +3,12 @@ import type { PublicTone } from '../../domain/public-portal'
 import { usePublicDoctorPortrait } from '../../composables/usePublicDoctorPortrait'
 
 const props = withDefaults(defineProps<{
-  photoUrl: string | null; name: string; initials: string; tone?: PublicTone; size?: 'small' | 'large';
+  photoUrl: string | null; name: string; initials: string; tone?: PublicTone; size?: 'small' | 'large' | 'poster';
 }>(), { tone: 'teal', size: 'small' })
 const { src, onError } = usePublicDoctorPortrait(() => props.photoUrl)
 </script>
 <template>
-  <span class="public-portrait" :class="{ 'is-large': size === 'large', 'is-lime': tone === 'lime' }">
+  <span class="public-portrait" :class="{ 'is-large': size === 'large', 'is-poster': size === 'poster', 'is-lime': tone === 'lime' }">
     <img
       v-if="src"
       :src="src"
