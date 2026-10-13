@@ -332,6 +332,15 @@
     border-radius: 18px;
     font-size: 1.65rem;
   }
+  .public-portrait.is-poster {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    border: 0;
+    border-bottom: 1px solid #e4f0ed;
+    border-radius: 0;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+  }
   .public-portrait img {
     width: 100%;
     height: 100%;
@@ -340,8 +349,19 @@
   }
 
   .public-doctor-card {
-    padding: 1.5rem;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
     border-top: 3px solid #69d4dc;
+  }
+
+  .public-doctor-card-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: 1.5rem;
   }
 
   .public-doctor-card.is-lime {
@@ -350,19 +370,34 @@
 
   .public-schedule-card {
     padding: 1.5rem;
-    border-top: 3px solid var(--color-brand-400);
+    border-top: 4px solid var(--shift-accent);
   }
 
-  .public-schedule-card.is-lime {
-    border-top-color: var(--color-lime-soft);
+  .public-schedule-card.shift-tone {
+    border-right-color: var(--shift-border);
+    border-bottom-color: var(--shift-border);
+    border-left-color: var(--shift-border);
+    background: var(--shift-surface);
+  }
+
+  .public-schedule-code {
+    display: inline-flex;
+    min-width: 2.8rem;
+    align-items: center;
+    justify-content: center;
+    padding: .3rem .65rem;
+    border: 1px solid var(--shift-border);
+    border-radius: .55rem;
+    font-size: .7rem;
+    font-weight: 600;
   }
 
   .public-duty-time {
     margin-top: 1.5rem;
     padding: 1.1rem;
-    border: 1px solid #e5efec;
+    border: 1px solid var(--shift-border);
     border-radius: .9rem;
-    background: var(--public-surface);
+    background: var(--shift-fill);
   }
 
   .public-news-card {
