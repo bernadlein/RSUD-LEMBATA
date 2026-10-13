@@ -23,6 +23,13 @@ export interface Doctor {
   leave: Array<{ from: string; to: string }>
 }
 export interface Boundary { prev2: string; prev1: string; next1: string; next2: string }
+export interface SchedulePrintDetails {
+  legendTitle: string
+  legend: Array<{ code: string; label: string }>
+  notes: string[]
+  showPhone: boolean
+  blankCode?: string
+}
 export interface MonthPlan {
   month: string
   assignments: Record<string, Record<string, string>>
@@ -31,6 +38,7 @@ export interface MonthPlan {
   frozenThrough: number
   validationFrom: number
   shiftSnapshot?: ShiftCode[]
+  printDetails?: SchedulePrintDetails
 }
 export interface Settings {
   hospital: string
@@ -40,6 +48,8 @@ export interface Settings {
   directorNip: string
   sectionHead: string
   sectionHeadNip: string
+  sectionHeadTitle?: string
+  signatureOrder?: 'director-first' | 'head-first'
   signedDate: string
   minGapHours: number
   maxConsecutiveLong: number
