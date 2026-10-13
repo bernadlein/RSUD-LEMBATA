@@ -1,4 +1,5 @@
 import type { MonthPlan, ShiftCode, Unit, Workspace } from './types'
+import { shiftColorClass } from './shift-colors'
 export function planShifts(w: Workspace, p: MonthPlan): ShiftCode[] { return p.shiftSnapshot ?? w.shifts }
 export const unitLabels: Record<Unit, string> = { igd: 'IGD', ruangan: 'Ruangan', anak: 'Ruang anak', lain: 'Lainnya', none: 'Tidak bertugas' }
 export function minutes(time: string): number { const [h, m] = time.split(':').map(Number); return h! * 60 + m! }
@@ -19,13 +20,8 @@ export function clockLabel(s: ShiftCode | undefined): string {
   return `${s.start}–${s.end}${next}`
 }
 export function shiftStyle(s: ShiftCode | undefined): string {
-  if (!s) return 'bg-slate-50 text-slate-400'
-  if (s.kind === 'leave') return 'bg-amber-50 text-amber-700'
-  if (s.kind === 'off' || s.kind === 'not_started') return 'bg-slate-100 text-slate-500'
-  if (s.unit === 'igd') return (shiftHours(s) ?? 0) >= 12 ? 'bg-brand-100 text-brand-800' : 'bg-brand-50 text-brand-700'
-  if (s.unit === 'ruangan') return (shiftHours(s) ?? 0) >= 12 ? 'bg-indigo-100 text-indigo-800' : 'bg-indigo-50 text-indigo-700'
-  if (s.unit === 'anak') return 'bg-lime-100 text-lime-800'
-  return 'bg-orange-50 text-orange-700'
+  const code = s?.kind === 'leave' ? 'C' : s?.kind === 'off' ? 'L' : s?.kind === 'not_started' ? 'BM' : s?.code
+  return `${shiftColorClass(code)} shift-fill`
 }
 export function isNight(s: ShiftCode | undefined): boolean { return !!s?.start && !!s.end && minutes(s.end) < minutes(s.start) }
 export function shiftInterval(s: ShiftCode | undefined, dayIndex: number): [number, number] | null {
