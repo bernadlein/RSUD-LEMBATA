@@ -1,0 +1,103 @@
+@layer components {
+  /* One palette for the public cards, monthly grid, code badges and printed schedule. */
+  .shift-tone {
+    --shift-fill: #e8f3f2;
+    --shift-surface: #f2f8f7;
+    --shift-border: #beddd8;
+    --shift-accent: #318c84;
+    --shift-ink: #17232a;
+  }
+
+  /* PSI blue, PR yellow and leave peach follow the source sheet. */
+  .shift-tone.shift-psi {
+    --shift-fill: #ddebf7;
+    --shift-surface: #edf5fc;
+    --shift-border: #b7d6ed;
+    --shift-accent: #5b9bd5;
+  }
+  .shift-tone.shift-pi {
+    --shift-fill: #d9f2f4;
+    --shift-surface: #edfafa;
+    --shift-border: #acdfe3;
+    --shift-accent: #1696a2;
+  }
+  .shift-tone.shift-si {
+    --shift-fill: #fce5cd;
+    --shift-surface: #fff5e9;
+    --shift-border: #f2cba0;
+    --shift-accent: #c88031;
+  }
+  .shift-tone.shift-mi {
+    --shift-fill: #e1e8fb;
+    --shift-surface: #f0f3fc;
+    --shift-border: #becbef;
+    --shift-accent: #657fc4;
+  }
+  .shift-tone.shift-psr {
+    --shift-fill: #e2f0d9;
+    --shift-surface: #f2f8ec;
+    --shift-border: #c3dfb0;
+    --shift-accent: #78a953;
+  }
+  .shift-tone.shift-prr {
+    --shift-fill: #dcf3e8;
+    --shift-surface: #effaf4;
+    --shift-border: #b1ddc9;
+    --shift-accent: #489876;
+  }
+  .shift-tone.shift-sr {
+    --shift-fill: #f2ead2;
+    --shift-surface: #faf7ed;
+    --shift-border: #e1d4af;
+    --shift-accent: #a28a43;
+  }
+  .shift-tone.shift-mr {
+    --shift-fill: #ebe0f5;
+    --shift-surface: #f6f0fb;
+    --shift-border: #d6c1e9;
+    --shift-accent: #9570b7;
+  }
+  .shift-tone.shift-pr {
+    --shift-fill: #fff1a8;
+    --shift-surface: #fff9df;
+    --shift-border: #ecd675;
+    --shift-accent: #b69824;
+  }
+  .shift-tone.shift-leave {
+    --shift-fill: #f8cbad;
+    --shift-surface: #fdf0e6;
+    --shift-border: #e7b18d;
+    --shift-accent: #c88253;
+  }
+  .shift-tone.shift-full-day {
+    --shift-fill: #f2dae5;
+    --shift-surface: #faf0f5;
+    --shift-border: #e4b9ce;
+    --shift-accent: #b67695;
+  }
+  .shift-tone.shift-off {
+    --shift-fill: #e9eef2;
+    --shift-surface: #f4f6f8;
+    --shift-border: #cdd7df;
+    --shift-accent: #8899a5;
+  }
+  .shift-tone.shift-not-started, .shift-tone.shift-empty {
+    --shift-fill: #f4f6f8;
+    --shift-surface: #fafbfc;
+    --shift-border: #e1e7ed;
+    --shift-accent: #a2b0bb;
+  }
+
+  .shift-fill {
+    background-color: var(--shift-fill);
+    border-color: var(--shift-border);
+    color: var(--shift-ink);
+  }
+
+  @media print {
+    .shift-fill {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+}
